@@ -25,6 +25,14 @@
  */
 
 /* $Id$ */
+?>
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<?php 
 
 $fonts = glob("../fonts/*.ttf");
 
@@ -33,3 +41,7 @@ foreach($fonts as $font) {
   echo "<li><a href=\"font_info.php?fontfile=$font\" target=\"font-info\">".basename($font)."</a></li>";
 }
 echo "</ul>";
+
+?>
+</body>
+</html>

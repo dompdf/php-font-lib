@@ -1,0 +1,14 @@
+body {
+	font-size: 12px;
+	font-family: tahoma, verdana, arial, sans-serif;
+	margin: 0.5em;
+}
+
+ul {
+	list-style-position: inside;
+	padding-left: 0.4em;
+}
+
+pre {
+	font-size: 11px;
+}
