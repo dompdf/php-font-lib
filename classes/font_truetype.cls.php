@@ -33,7 +33,7 @@ class Font_TrueType {
   protected $table = array();
   
   public $data = array();
-  public $scalerType;
+  public $sfntVersion;
   public $numTables;
   public $searchRange;
   public $entrySelector;
@@ -131,6 +131,74 @@ class Font_TrueType {
     19  => "SampleText",
   );
   
+  static $platforms = array(
+    0 => "Unicode",
+    1 => "Macintosh",
+ // 2 =>  Reserved
+    3 => "Microsoft",
+  );
+  
+  static $plaformSpecific = array(
+    // Unicode
+    0 => array(
+      0 => "Default semantics",
+      1 => "Version 1.1 semantics",
+      2 => "ISO 10646 1993 semantics (deprecated)",
+      3 => "Unicode 2.0 or later semantics",
+    ),
+    
+    // Macintosh
+    1 => array(
+      0 => "Roman",
+      1 => "Japanese",
+      2 => "Traditional Chinese",
+      3 => "Korean",
+      4 => "Arabic",  
+      5 => "Hebrew",  
+      6 => "Greek", 
+      7 => "Russian", 
+      8 => "RSymbol", 
+      9 => "Devanagari",  
+      10 => "Gurmukhi",  
+      11 => "Gujarati",  
+      12 => "Oriya", 
+      13 => "Bengali", 
+      14 => "Tamil", 
+      15 => "Telugu",
+      16 => "Kannada",
+      17 => "Malayalam",
+      18 => "Sinhalese",
+      19 => "Burmese",
+      20 => "Khmer",
+      21 => "Thai",
+      22 => "Laotian",
+      23 => "Georgian",
+      24 => "Armenian",
+      25 => "Simplified Chinese",
+      26 => "Tibetan",
+      27 => "Mongolian",
+      28 => "Geez",
+      29 => "Slavic",
+      30 => "Vietnamese",
+      31 => "Sindhi",
+    ),
+    
+    // Microsoft
+    3 => array(
+      0 => "Symbol",
+      1 => "Unicode BMP (UCS-2)",
+      2 => "ShiftJIS",
+      3 => "PRC",
+      4 => "Big5",
+      5 => "Wansung",
+      6 => "Johab",
+  //  7 => Reserved
+  //  8 => Reserved
+  //  9 => Reserved
+      10 => "Unicode UCS-4",
+    ),
+  );
+  
   const uint8     = 1;
   const  int8     = 2;
   const uint16    = 3;
@@ -156,7 +224,7 @@ class Font_TrueType {
   }
   
   function parseHeader(){
-    $this->scalerType    = $this->read(4);
+    $this->sfntVersion   = $this->readFixed();
     $this->numTables     = $this->readUInt16();
     $this->searchRange   = $this->readUInt16();
     $this->entrySelector = $this->readUInt16();
@@ -353,7 +421,7 @@ class Font_TrueType {
     $this->data["OS/2"] = array(
       "version" => $this->readUInt16(),
     );
-    
+    // @todo use $this->unpack()
     $pack = "nxAvgCharWidth/nusWeightClass/nusWidthClass/sfsType/".
             "nySubscriptXSize/nySubscriptYSize/nySubscriptXOffset/nySubscriptYOffset/".
             "nySuperscriptXSize/nySuperscriptYSize/nySuperscriptXOffset/nySuperscriptYOffset/".
@@ -383,8 +451,8 @@ class Font_TrueType {
     $this->readTable("post");
   }
   
-  function normalizeFUnit($value){
-    return round($value * (1000 / $this->data["head"]["unitsPerEm"]));
+  function normalizeFUnit($value, $base = 1000){
+    return round($value * ($base / $this->data["head"]["unitsPerEm"]));
   }
   
   protected function seek($offset) {
@@ -441,7 +509,9 @@ class Font_TrueType {
   }
 
   protected function readFixed() {
-    return $this->readInt16() + $this->readUInt16() / 65536.0;
+    $d = $this->readInt16();
+    $d2 = $this->readUInt16();
+    return round($d + $d2 / 65536, 4);
   }
 
   protected function readInt16() {

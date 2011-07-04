@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,23 +25,16 @@
  */
 
 /* $Id$ */
-?>
-<!DOCTYPE html>
-<html>
-<head>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-<?php 
 
-$fonts = glob("../fonts/*.{ttf,otf}", GLOB_BRACE);
+require_once dirname(__FILE__)."/font_truetype.cls.php";
+require_once dirname(__FILE__)."/font_opentype_table_directory_entry.cls.php";
 
-echo "<ul>";
-foreach($fonts as $font) {
-  echo "<li><a href=\"font_info.php?fontfile=$font\" target=\"font-info\">".basename($font)."</a></li>";
+class Font_OpenType extends Font_TrueType {
+  function parseHeader(){
+    parent::parseHeader();
+    
+    if ($this->sfntVersion != 1.0) {
+      throw new Exception ("Only TrueType sfnt files are supported");
+    }
+  }
 }
-echo "</ul>";
-
-?>
-</body>
-</html>
