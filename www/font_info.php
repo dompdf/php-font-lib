@@ -35,17 +35,19 @@
   <pre>
 <?php 
 
-require_once "../classes/font_truetype.cls.php";
-require_once "../classes/font_woff.cls.php";
-require_once "../classes/adobe_font_metrics.cls.php";
+require_once "../classes/font.cls.php";
 
 $fontfile = $_GET["fontfile"];
 
 $t = microtime(true);
 
-$font = new Font_TrueType();
-$font->load($fontfile);
+$font = Font::load($fontfile);
 $font->parse();
+
+if ($font instanceof Font_TrueType_Collection) {
+  $font = $font->getFont(0);
+  $font->parse();
+}
 
 //$font->saveAdobeFontMetrics("$fontfile.ufm");
 
@@ -59,7 +61,7 @@ if ($highlight) {
   highlight_string("<"."?php ".var_export($font->data, true));
 }
 else {
-  var_export($font->data);
+  var_export($font);
 }
 
 ?>

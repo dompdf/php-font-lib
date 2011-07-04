@@ -26,8 +26,37 @@
 
 /* $Id$ */
 
-require_once dirname(__FILE__)."/font_truetype.cls.php";
-
-class Font_OpenType extends Font_TrueType {
-  // 
+class Font {
+  public static function load($file) {
+    $header = file_get_contents($file, false, null, null, 4);
+    
+    switch($header) {
+      case "\x00\x01\x00\x00": 
+      case "true": 
+      case "typ1": 
+        $class = "Font_TrueType"; break;
+      
+      case "OTTO":
+        $class = "Font_OpenType"; break;
+      
+      case "wOFF":
+        $class = "Font_WOFF"; break;
+        
+      case "ttcf":
+        $class = "Font_TrueType_Collection"; break;
+        
+      // Unknown type
+      default: 
+        $class = null;
+    }
+    
+    if ($class) {
+      require_once dirname(__FILE__)."/".strtolower($class).".cls.php";
+      
+      $obj = new $class;
+      $obj->load($file);
+      
+      return $obj;
+    }
+  }
 }

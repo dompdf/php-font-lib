@@ -26,18 +26,21 @@
 
 /* $Id$ */
 
+require_once dirname(__FILE__)."/font_binary_stream.cls.php";
 require_once dirname(__FILE__)."/font_truetype_table_directory_entry.cls.php";
+require_once dirname(__FILE__)."/adobe_font_metrics.cls.php";
 
-class Font_TrueType {
-  protected $f;
-  protected $table = array();
-  
-  public $data = array();
+class Font_TrueType extends Font_Binary_Stream {
   public $sfntVersion;
+  public $sfntVersionText;
   public $numTables;
   public $searchRange;
   public $entrySelector;
   public $rangeShift;
+  private $tableOffset = 0; // Used for TTC
+  
+  protected $table = array();
+  public $data = array();
   
   static $tableFormat = array(
     "head" => array(
@@ -199,22 +202,8 @@ class Font_TrueType {
     ),
   );
   
-  const uint8     = 1;
-  const  int8     = 2;
-  const uint16    = 3;
-  const  int16    = 4;
-  const uint32    = 5;
-  const  int32    = 6;
-  const shortFrac = 7;
-  const Fixed     = 8;
-  const  FWord    = 9;
-  const uFWord    = 10;
-  const F2Dot14   = 11;
-  const longDateTime = 12;
-  
-  function load($filename) {
-    $this->f = fopen($filename, "rb");
-    return $this->f != false;
+  function setTableOffset($offset) {
+    $this->tableOffset = $offset;
   }
   
   function parse() {
@@ -224,7 +213,12 @@ class Font_TrueType {
   }
   
   function parseHeader(){
+    $this->seek($this->tableOffset);
     $this->sfntVersion   = $this->readFixed();
+    
+    $this->seek($this->tableOffset);
+    $this->sfntVersionText   = $this->read(4);
+    
     $this->numTables     = $this->readUInt16();
     $this->searchRange   = $this->readUInt16();
     $this->entrySelector = $this->readUInt16();
@@ -254,7 +248,7 @@ class Font_TrueType {
     $this->readTable("head");
     
     if($this->data["head"]["magicNumber"] != 0x5F0F3CF5) {
-      throw new Exception("Incorrect magic number (".dechex($this->data["head"]["magicNumber"]).")");
+      //throw new Exception("Incorrect magic number (".dechex($this->data["head"]["magicNumber"]).")");
     }
   }
 
@@ -455,10 +449,6 @@ class Font_TrueType {
     return round($value * ($base / $this->data["head"]["unitsPerEm"]));
   }
   
-  protected function seek($offset) {
-    return fseek($this->f, $offset, SEEK_SET) == 0;
-  }
-
   protected function seekTag($tag) {
     if (!isset($this->table[$tag])) {
       return false;
@@ -468,73 +458,6 @@ class Font_TrueType {
   }
   
   protected function quitTag(){ }
-  
-  protected function skip($n) {
-    fseek($this->f, $n, SEEK_CUR);
-  }
-  
-  protected function r($type) {
-    switch($type) {
-      case self::uint8:     return $this->read(1);
-      case self::int8:      return $this->read(1);
-      case self::uint16:    return $this->readUInt16();
-      case self::int16:     return $this->readInt16();
-      case self::uint32:    return $this->readUInt32();
-      case self::int32:     return $this->readUInt32(); 
-      case self::shortFrac: return $this->readFixed();
-      case self::Fixed:     return $this->readFixed();
-      case self::FWord:     return $this->readInt16();
-      case self::uFWord:    return $this->readUInt16();
-      case self::F2Dot14:   return $this->readInt16();
-      case self::longDateTime: return $this->readLongDateTime();
-    }
-  }
-  
-  protected function unpack($def) {
-    $d = array();
-    foreach($def as $name => $type) {
-      $d[$name] = $this->r($type);
-    }
-    return $d;
-  }
-
-  protected function read($n) {
-    if ($n < 1) return "";
-    return fread($this->f, $n);
-  }
-
-  protected function readUInt16() {
-    $a = unpack('nn', $this->read(2));
-    return $a['n'];
-  }
-
-  protected function readFixed() {
-    $d = $this->readInt16();
-    $d2 = $this->readUInt16();
-    return round($d + $d2 / 65536, 4);
-  }
-
-  protected function readInt16() {
-    $a = unpack('nn', $this->read(2));
-    $v = $a['n'];
-    
-    if ($v >= 0x8000) {
-      $v -= 65536;
-    }
-      
-    return $v;
-  }
-
-  protected function readUInt32() {
-    $a = unpack('NN', $this->read(4));
-    return $a['N'];
-  }
-  
-  protected function readLongDateTime() {
-    $dt = array($this->readUInt32(), $this->readUInt32());
-    $date = $dt[1] - 2082844800;
-    return strftime("%Y-%m-%d %H:%M:%S", $date);
-  }
   
   protected function readTable($name) {
     $this->seekTag($name);

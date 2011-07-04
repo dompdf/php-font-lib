@@ -26,8 +26,60 @@
 
 /* $Id$ */
 
+require_once dirname(__FILE__)."/font_binary_stream.cls.php";
 require_once dirname(__FILE__)."/font_truetype.cls.php";
 
-class Font_OpenType extends Font_TrueType {
-  // 
+class Font_TrueType_Collection extends Font_Binary_Stream implements Iterator {
+  private $position = 0;
+  
+  protected $collection = array();
+  protected $version;
+  protected $numFonts;
+  
+  function parse(){
+    $tag = $this->read(4);
+    
+    $this->version = $this->readFixed();
+    $this->numFonts = $this->readUInt32();
+    
+    for($i = 0; $i < $this->numFonts; $i++) {
+      $this->collection[] = $this->readUInt32();
+    }
+  }
+  
+  /**
+   * @param int $fontId
+   * @return Font_TrueType
+   */
+  function getFont($fontId) {
+    if (empty($this->collection)) {
+      $this->parse();
+    }
+    
+    $font = new Font_TrueType();
+    $font->f = $this->f;
+    $font->setTableOffset($this->collection[$fontId]);
+    
+    return $font;
+  }
+  
+  function current() {
+    return $this->collection[$this->position];
+  }
+  
+  function key() {
+    return $this->position;
+  }
+  
+  function next() {
+    return ++$this->position;
+  }
+  
+  function rewind() {
+    $this->position = 0;
+  }
+  
+  function valid() {
+    return isset($this->collection[$this->position]);
+  }
 }

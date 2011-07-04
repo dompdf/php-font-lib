@@ -34,7 +34,7 @@
 <body>
 <?php 
 
-$fonts = glob("../fonts/*.{ttf,otf}", GLOB_BRACE);
+$fonts = glob("../fonts/*.{ttf,otf,ttc}", GLOB_BRACE);
 
 echo "<ul>";
 foreach($fonts as $font) {
