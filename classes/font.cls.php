@@ -29,6 +29,7 @@
 class Font {
   public static function load($file) {
     $header = file_get_contents($file, false, null, null, 4);
+    $class = null;
     
     switch($header) {
       case "\x00\x01\x00\x00": 
@@ -45,9 +46,13 @@ class Font {
       case "ttcf":
         $class = "Font_TrueType_Collection"; break;
         
-      // Unknown type
+      // Unknown type or EOT
       default: 
-        $class = null;
+        $magicNumber = $header = file_get_contents($file, false, null, 34, 2);
+        
+        if ($magicNumber === "LP") {
+          $class = "Font_EOT";
+        }
     }
     
     if ($class) {

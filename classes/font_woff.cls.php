@@ -31,9 +31,15 @@ require_once dirname(__FILE__)."/font_woff_table_directory_entry.cls.php";
 
 class Font_WOFF extends Font_TrueType {
   private $origF;
+  private $fileOffset = 0;
   
   function parseHeader(){
-    $this->scalerType    = $this->read(4);
+    $this->seek(0);
+    $this->sfntVersion   = $this->readFixed();
+    
+    $this->seek(0);
+    $this->sfntVersionText   = $this->read(4);
+    
     $this->flavor     = $this->readUInt32();
     $this->length     = $this->readUInt32();
     $this->numTables     = $this->readUInt16();
@@ -56,30 +62,40 @@ class Font_WOFF extends Font_TrueType {
     $tableEntry = $this->table[$tag];
     
     if ($tableEntry->length == $tableEntry->origLength) {
-      $this->origF = null;
       return;
     }
     
+    $this->fileOffset = ftell($this->f);
     $data = $this->read($tableEntry->length);
     
-    $tmpfile = tempnam(sys_get_temp_dir(), "fnt");
-    $f = fopen($tmpfile, "wb");
-    fwrite($f, $data);
-    fclose($f);
+    // PHP 5.1+
+    $f = @fopen("php://temp", "rb+");
     
-    $f = fopen("compress.zlib://$tmpfile", "rb");
-    //fwrite($f, gzuncompress($data));
+    if (!$f) {
+      $f = fopen(tempnam(sys_get_temp_dir(), "fnt"), "rb+");
+    }
+    
+    fwrite($f, gzuncompress($data));
+    rewind($f);
+    
     $this->origF = $this->f;
     $this->f = $f;
   }
   
+  public function seek($offset) {
+    return fseek($this->f, $offset - $this->fileOffset, SEEK_SET) == 0;
+  }
+  
   function quitTag(){
     if ($this->origF) {
+      fclose($this->f);
       $this->f = $this->origF;
+      $this->origF = null;
+      $this->fileOffset = 0;
     }
   }
   
-  function parseTable(){
+  function parseTableEntries(){
     for($i = 0; $i < $this->numTables; $i++) {
       $str = $this->read(Font_WOFF_Table_Directory_Entry::$entrySize);
       $entry = new Font_WOFF_Table_Directory_Entry($str);

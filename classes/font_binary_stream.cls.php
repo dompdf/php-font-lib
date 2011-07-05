@@ -42,20 +42,20 @@ class Font_Binary_Stream {
   const F2Dot14   = 11;
   const longDateTime = 12;
   
-  function load($filename) {
+  public function load($filename) {
     $this->f = fopen($filename, "rb");
     return $this->f != false;
   }
   
-  protected function seek($offset) {
+  public function seek($offset) {
     return fseek($this->f, $offset, SEEK_SET) == 0;
   }
   
-  protected function skip($n) {
+  public function skip($n) {
     fseek($this->f, $n, SEEK_CUR);
   }
   
-  protected function r($type) {
+  public function r($type) {
     switch($type) {
       case self::uint8:     return $this->read(1);
       case self::int8:      return $this->read(1);
@@ -72,7 +72,7 @@ class Font_Binary_Stream {
     }
   }
   
-  protected function unpack($def) {
+  public function unpack($def) {
     $d = array();
     foreach($def as $name => $type) {
       $d[$name] = $this->r($type);
@@ -80,25 +80,23 @@ class Font_Binary_Stream {
     return $d;
   }
 
-  protected function read($n) {
+  public function read($n) {
     if ($n < 1) return "";
     return fread($this->f, $n);
   }
 
-  protected function readUInt16() {
+  public function readUInt16() {
     $a = unpack('nn', $this->read(2));
     return $a['n'];
   }
 
-  protected function readFixed() {
-    $d = $this->readInt16();
-    $d2 = $this->readUInt16();
-    return round($d + $d2 / 65536, 4);
+  public function readUInt32() {
+    $a = unpack('NN', $this->read(4));
+    return $a['N'];
   }
 
-  protected function readInt16() {
-    $a = unpack('nn', $this->read(2));
-    $v = $a['n'];
+  public function readInt16() {
+    $v = $this->readUInt16();
     
     if ($v >= 0x8000) {
       $v -= 65536;
@@ -107,12 +105,13 @@ class Font_Binary_Stream {
     return $v;
   }
 
-  protected function readUInt32() {
-    $a = unpack('NN', $this->read(4));
-    return $a['N'];
+  public function readFixed() {
+    $d = $this->readInt16();
+    $d2 = $this->readUInt16();
+    return round($d + $d2 / 65536, 4);
   }
   
-  protected function readLongDateTime() {
+  public function readLongDateTime() {
     $dt = array($this->readUInt32(), $this->readUInt32());
     $date = $dt[1] - 2082844800;
     return strftime("%Y-%m-%d %H:%M:%S", $date);

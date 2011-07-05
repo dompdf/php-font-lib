@@ -388,7 +388,12 @@ class Font_TrueType extends Font_Binary_Stream {
   function parseNAME(){
     $this->seekTag("name");
     
-    $tableOffset = $this->table["name"]->offset;
+    // FIXME
+    if ($this instanceof Font_WOFF) {
+      $tableOffset = 0;
+    }
+    else
+      $tableOffset = $this->table["name"]->offset;
     
     $pack = "nformat/ncount/nstringOffset";
     $this->data["name"] = unpack($pack, $this->read(6));
@@ -519,6 +524,7 @@ class Font_TrueType extends Font_Binary_Stream {
     
     $afm->startSection("FontMetrics", 4.1);
       $afm->addPair("Notice", "Converted by PHP-font-lib");
+      $afm->addPair("Comment", "http://php-font-lib.googlecode.com/");
       $afm->addPair("EncodingScheme", "FontSpecific");
       
       $nameRecords = $data["name"]["nameRecord"];

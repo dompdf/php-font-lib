@@ -41,6 +41,9 @@ $fontfile = $_GET["fontfile"];
 
 $t = microtime(true);
 
+/**
+ * @var Font_TrueType
+ */
 $font = Font::load($fontfile);
 $font->parse();
 
