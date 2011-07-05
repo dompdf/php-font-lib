@@ -286,8 +286,9 @@ class Font_TrueType extends Font_Binary_Stream {
       if($format != 4) continue;
       
       $pack = "nlength/nlanguage/nsegCountX2/nsearchRange/nentrySelector/nrangeShift";
-      $map = unpack($pack, $this->read(12));
-      $segCount = $map["segCountX2"] / 2;
+      $subtable += unpack($pack, $this->read(12));
+      $segCount = $subtable["segCountX2"] / 2;
+      $subtable["segCount"] = $segCount;
       
       $endCode = array();
       for($i = 0; $i < $segCount; $i++) {
@@ -351,6 +352,37 @@ class Font_TrueType extends Font_Binary_Stream {
     }
     
     $this->quitTag();
+  }
+  
+  function mapCharCode($charCode, $cmap) {
+    $segCount       = $cmap["segCount"];
+    $endCode        = $cmap["endCode"];
+    $startCode      = $cmap["startCode"];
+    $idDelta        = $cmap["idDelta"];
+    $idRangeOffset  = $cmap["idRangeOffset"];
+    $glyphIndexArray = $cmap["glyphIndexArray"];
+    
+    if (($charCode < 0) || ($charCode >= 0xFFFE))
+      return 0;
+
+    for ($i = 0; $i < $segCount; $i++) {
+      if ($endCode[$i] >= $charCode) {
+        if ($startCode[$i] <= $charCode) {
+          if ($idRangeOffset[$i] > 0) {
+            return $glyphIndexArray[$idRangeOffset[$i]/2 +
+                                ($charCode - $startCode[$i]) -
+                                ($segCount - $i)];
+          } else {
+            return ($idDelta[$i] + $charCode) % 65536;
+          }
+        } 
+        else {
+          break;
+        }
+      }
+    }
+    
+    return 0;
   }
   
   function parseNAME(){
@@ -532,6 +564,10 @@ class Font_TrueType extends Font_Binary_Stream {
             
         $afm->startSection("CharMetrics", count($hmtx));
         
+          //for($c = 0; $c < 0xFFFE; $c++) {
+          //  $g = $this->mapCharCode($c, $subtable);
+          //  if ($g == 0) continue;
+          
           foreach($subtable["glyphIndexArray"] as $c => $g) {
             if (empty($hmtx[$g])) continue;
             
