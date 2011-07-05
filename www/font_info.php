@@ -55,7 +55,7 @@ if ($font instanceof Font_TrueType_Collection) {
 //$font->saveAdobeFontMetrics("$fontfile.ufm");
 
 echo "Memory:\t".(memory_get_peak_usage(true) / 1024)."KB\n";
-echo "Time:\t".(microtime(true) - $t)."s\n";
+echo "Time:\t".round(microtime(true) - $t, 4)."s\n";
 echo "<hr />";
 
 $highlight = false;
