@@ -12,3 +12,11 @@ ul {
 pre {
 	font-size: 11px;
 }
+
+h2 {
+	border-bottom: 1px solid #ccc;
+}
+
+hr {
+	clear: both;
+}

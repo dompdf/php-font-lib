@@ -202,6 +202,78 @@ class Font_TrueType extends Font_Binary_Stream {
     ),
   );
   
+  static $macCharNames = array(
+    ".notdef", ".null", "CR",
+    "space", "exclam", "quotedbl", "numbersign",
+    "dollar", "percent", "ampersand", "quotesingle",
+    "parenleft", "parenright", "asterisk", "plus",
+    "comma", "hyphen", "period", "slash",
+    "zero", "one", "two", "three",
+    "four", "five", "six", "seven",
+    "eight", "nine", "colon", "semicolon",
+    "less", "equal", "greater", "question",
+    "at", "A", "B", "C",
+    "D", "E", "F", "G",
+    "H", "I", "J", "K",
+    "L", "M", "N", "O",
+    "P", "Q", "R", "S",
+    "T", "U", "V", "W",
+    "X", "Y", "Z", "bracketleft",
+    "backslash", "bracketright", "asciicircum", "underscore",
+    "grave", "a", "b", "c",
+    "d", "e", "f", "g",
+    "h", "i", "j", "k",
+    "l", "m", "n", "o",
+    "p", "q", "r", "s",
+    "t", "u", "v", "w",
+    "x", "y", "z", "braceleft",
+    "bar", "braceright", "asciitilde", "Adieresis",
+    "Aring", "Ccedilla", "Eacute", "Ntilde",
+    "Odieresis", "Udieresis", "aacute", "agrave",
+    "acircumflex", "adieresis", "atilde", "aring",
+    "ccedilla", "eacute", "egrave", "ecircumflex",
+    "edieresis", "iacute", "igrave", "icircumflex",
+    "idieresis", "ntilde", "oacute", "ograve",
+    "ocircumflex", "odieresis", "otilde", "uacute",
+    "ugrave", "ucircumflex", "udieresis", "dagger",
+    "degree", "cent", "sterling", "section",
+    "bullet", "paragraph", "germandbls", "registered",
+    "copyright", "trademark", "acute", "dieresis",
+    "notequal", "AE", "Oslash", "infinity",
+    "plusminus", "lessequal", "greaterequal", "yen",
+    "mu", "partialdiff", "summation", "product",
+    "pi", "integral", "ordfeminine", "ordmasculine",
+    "Omega", "ae", "oslash", "questiondown",
+    "exclamdown", "logicalnot", "radical", "florin",
+    "approxequal", "increment", "guillemotleft", "guillemotright",
+    "ellipsis", "nbspace", "Agrave", "Atilde",
+    "Otilde", "OE", "oe", "endash",
+    "emdash", "quotedblleft", "quotedblright", "quoteleft",
+    "quoteright", "divide", "lozenge", "ydieresis",
+    "Ydieresis", "fraction", "currency", "guilsinglleft",
+    "guilsinglright", "fi", "fl", "daggerdbl",
+    "periodcentered", "quotesinglbase", "quotedblbase", "perthousand",
+    "Acircumflex", "Ecircumflex", "Aacute", "Edieresis",
+    "Egrave", "Iacute", "Icircumflex", "Idieresis",
+    "Igrave", "Oacute", "Ocircumflex", "applelogo",
+    "Ograve", "Uacute", "Ucircumflex", "Ugrave",
+    "dotlessi", "circumflex", "tilde", "macron",
+    "breve", "dotaccent", "ring", "cedilla",
+    "hungarumlaut", "ogonek", "caron", "Lslash",
+    "lslash", "Scaron", "scaron", "Zcaron",
+    "zcaron", "brokenbar", "Eth", "eth",
+    "Yacute", "yacute", "Thorn", "thorn",
+    "minus", "multiply", "onesuperior", "twosuperior",
+    "threesuperior", "onehalf", "onequarter", "threequarters",
+    "franc", "Gbreve", "gbreve", "Idot",
+    "Scedilla", "scedilla", "Cacute", "cacute",
+    "Ccaron", "ccaron", "dmacron"
+  );
+  
+  function getTable(){
+    return $this->table;
+  }
+  
   function setTableOffset($offset) {
     $this->tableOffset = $offset;
   }
@@ -248,7 +320,7 @@ class Font_TrueType extends Font_Binary_Stream {
     $this->readTable("head");
     
     if($this->data["head"]["magicNumber"] != 0x5F0F3CF5) {
-      //throw new Exception("Incorrect magic number (".dechex($this->data["head"]["magicNumber"]).")");
+      throw new Exception("Incorrect magic number (".dechex($this->data["head"]["magicNumber"]).")");
     }
   }
 
@@ -388,18 +460,11 @@ class Font_TrueType extends Font_Binary_Stream {
   function parseNAME(){
     $this->seekTag("name");
     
-    // FIXME
-    if ($this instanceof Font_WOFF) {
-      $tableOffset = 0;
-    }
-    else
-      $tableOffset = $this->table["name"]->offset;
+    $tableOffset = ftell($this->f);
     
     $pack = "nformat/ncount/nstringOffset";
     $this->data["name"] = unpack($pack, $this->read(6));
     $nameData = &$this->data["name"];
-    
-    $offset = $tableOffset + $nameData["stringOffset"];
     
     $nameRecords = array();
     for($i = 0; $i < $nameData["count"]; $i++) {
@@ -479,7 +544,64 @@ class Font_TrueType extends Font_Binary_Stream {
   }
   
   function parsePOST(){
-    $this->readTable("post");
+    $name = "post";
+    
+    $this->seekTag($name);
+    $data = $this->unpack(self::$tableFormat[$name]);
+    $names = array();
+    
+    switch($data["format"]) {
+      case 1:
+        $names = self::$macCharNames;
+      break;
+      
+      case 2:
+        $data["numberOfGlyphs"] = $this->readUInt16();
+        
+        $glyphNameIndex = array();
+        for($i = 0; $i < $data["numberOfGlyphs"]; $i++) {
+          $glyphNameIndex[] = $this->readUInt16();
+        }
+        
+        $num = max($data["numberOfGlyphs"] - 257, $this->data["maxp"]["numGlyphs"]);
+        
+        $namesPascal = array();
+        for($i = 0; $i < $num; $i++) {
+          $len = $this->readUInt8();
+          $namesPascal[] = $this->read($len);
+        }
+        
+        foreach($glyphNameIndex as $g => $index) {
+          if ($index < 258) {
+            $names[$g] = self::$macCharNames[$index];
+          }
+          else {
+            if(!isset($namesPascal[$index - 258])) var_dump($g);
+            $names[$g] = $namesPascal[$index - 258];
+          }
+        }
+        
+        $data["glyphNameIndex"] = $glyphNameIndex;
+        
+      break;
+      
+      case 2.5:
+        // TODO
+      break;
+      
+      case 3:
+        // nothing
+      break;
+      
+      case 4:
+        // TODO
+      break;
+    }
+    
+    $data["names"] = $names;
+    
+    $this->data[$name] = $data;
+    $this->quitTag();
   }
   
   function normalizeFUnit($value, $base = 1000){
@@ -567,6 +689,7 @@ class Font_TrueType extends Font_Binary_Stream {
       
       if ($subtable) {
         $hmtx = $data["hmtx"]["hMetrics"];
+        $names = $data["post"]["names"];
             
         $afm->startSection("CharMetrics", count($hmtx));
         
@@ -580,7 +703,7 @@ class Font_TrueType extends Font_Binary_Stream {
             $afm->addMetric(array(
               "U" => $c,
               "WX" => $this->normalizeFUnit($hmtx[$g]),
-              "N" => sprintf("uni%04x", $c),
+              "N" => (isset($names[$g]) ? $names[$g] : sprintf("uni%04x", $c)),
               "G" => $g,
             ));
           }

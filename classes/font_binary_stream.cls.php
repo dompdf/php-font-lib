@@ -85,6 +85,20 @@ class Font_Binary_Stream {
     return fread($this->f, $n);
   }
 
+  public function readUInt8() {
+    return ord($this->read(1));
+  }
+
+  public function readInt8() {
+    $v = $this->readUInt8();
+    
+    if ($v >= 0x80) {
+      $v -= 256;
+    }
+      
+    return $v;
+  }
+
   public function readUInt16() {
     $a = unpack('nn', $this->read(2));
     return $a['n'];
