@@ -37,6 +37,39 @@ if ($font instanceof Font_TrueType_Collection) {
 </h3>
 <hr />
 
+<?php /*
+<div class="unicode-map">
+  <?php 
+        
+  $subtable = null;
+  foreach($font->data["cmap"]["subtables"] as $_subtable) {
+    if ($_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1) {
+      $subtable = $_subtable;
+      break;
+    }
+  }
+  
+  $empty = 0;
+  for($c = 0; $c <= 0xFFFF; $c++) { 
+    if (($c % 256 == 0 || $c == 0xFFFF) && $empty > 0) {
+      echo "<b style=\"width:{$empty}px\"></b>";
+      $empty = 0;
+    }
+    
+    if (isset($subtable["glyphIndexArray"][$c])) {
+      if ($empty > 0) {
+        echo "<b style=\"width:{$empty}px\"></b>";
+        $empty = 0;
+      }
+      echo "<i><s>&#$c;</s></i>";
+    }
+    else {
+      $empty++;
+    }
+  } ?>
+</div>
+*/
+?>
 <ul>
   <?php foreach($font->data as $tag => $data) { ?>
     <li><a href="#<?php echo $tag; ?>"><?php echo $tag; ?></a></li>

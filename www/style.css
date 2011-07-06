@@ -20,3 +20,45 @@ h2 {
 hr {
 	clear: both;
 }
+
+.unicode-map {
+  line-height: 0px;
+	font-size: 1px;
+	width: 256px;
+	float: right;
+}
+
+.unicode-map i, .unicode-map b {
+  display: inline-block;
+  width: 1px;
+  height: 1px;
+  position: relative;
+}
+
+.unicode-map i s, .unicode-map b s {
+  text-decoration: none;
+  font-style: normal;
+	text-align: center;
+  display: none;
+  position: absolute;
+	font-size: 18px;
+	background: #fff;
+  width: 24px;
+  height: 24px;
+	line-height: 1;
+	z-index: 5000;
+  top: -28px;
+  left: -12px;
+}
+
+.unicode-map i:hover s, .unicode-map b:hover s {
+	display: inline-block;
+}
+
+.unicode-map i {
+	background: #0f0;
+}
+
+.unicode-map b {
+  background: #999;
+}
