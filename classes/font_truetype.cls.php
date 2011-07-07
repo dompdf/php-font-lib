@@ -492,6 +492,7 @@ class Font_TrueType extends Font_Binary_Stream {
     
     $hheaData = $this->getData("hhea");
     $numOfLongHorMetrics = $hheaData["numOfLongHorMetrics"];
+    $this->data["hmtx"]["numOfLongHorMetrics"] = $numOfLongHorMetrics;
     
     $hMetrics = array();
     for($i = 0; $i < $numOfLongHorMetrics; $i++) {
@@ -640,77 +641,7 @@ class Font_TrueType extends Font_Binary_Stream {
   }
   
   function saveAdobeFontMetrics($file) {
-    $data = $this->data;
-    
-    $afm = new Adobe_Font_Metrics($file);
-    
-    $afm->startSection("FontMetrics", 4.1);
-      $afm->addPair("Notice", "Converted by PHP-font-lib");
-      $afm->addPair("Comment", "http://php-font-lib.googlecode.com/");
-      $afm->addPair("EncodingScheme", "FontSpecific");
-      
-      $nameRecords = $data["name"]["nameRecord"];
-      foreach($nameRecords as $id => $value) {
-        if (!isset(self::$nameIdCodes[$id]) || preg_match("/[\r\n]/", $value)) {
-          continue;
-        }
-        
-        $afm->addPair(self::$nameIdCodes[$id], $value);
-      }
-      
-      $os2 = $data["OS/2"];
-      $afm->addPair("Weight", ($os2["usWeightClass"] > 400 ? "Bold" : "Medium"));
-      
-      $post = $data["post"];
-      $afm->addPair("ItalicAngle",        $post["italicAngle"]);
-      $afm->addPair("IsFixedPitch",      ($post["isFixedPitch"] ? "true" : "false"));
-      $afm->addPair("UnderlineThickness", $this->normalizeFUnit($post["underlineThickness"]));
-      $afm->addPair("UnderlinePosition",  $this->normalizeFUnit($post["underlinePosition"]));
-      
-      $hhea = $data["hhea"];
-      $afm->addPair("Ascender",  $this->normalizeFUnit($hhea["ascent"]));
-      $afm->addPair("Descender", $this->normalizeFUnit($hhea["descent"]));
-      
-      $head = $data["head"];
-      $afm->addArray("FontBBox", array(
-        $this->normalizeFUnit($head["xMin"]),
-        $this->normalizeFUnit($head["yMin"]),
-        $this->normalizeFUnit($head["xMax"]),
-        $this->normalizeFUnit($head["yMax"]),
-      ));
-      
-      $subtable = null;
-      foreach($data["cmap"]["subtables"] as $_subtable) {
-        if ($_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1) {
-          $subtable = $_subtable;
-          break;
-        }
-      }
-      
-      if ($subtable) {
-        $hmtx = $data["hmtx"]["hMetrics"];
-        $names = $data["post"]["names"];
-            
-        $afm->startSection("CharMetrics", count($hmtx));
-        
-          //for($c = 0; $c < 0xFFFE; $c++) {
-          //  $g = $this->mapCharCode($c, $subtable);
-          //  if ($g == 0) continue;
-          
-          foreach($subtable["glyphIndexArray"] as $c => $g) {
-            if (empty($hmtx[$g])) continue;
-            
-            $afm->addMetric(array(
-              "U" => $c,
-              "WX" => $this->normalizeFUnit($hmtx[$g]),
-              "N" => (isset($names[$g]) ? $names[$g] : sprintf("uni%04x", $c)),
-              "G" => $g,
-            ));
-          }
-          
-        $afm->endSection("CharMetrics");
-      }
-      
-    $afm->endSection("FontMetrics");
+    $afm = new Adobe_Font_Metrics($this);
+    $afm->write($file);
   }
 }

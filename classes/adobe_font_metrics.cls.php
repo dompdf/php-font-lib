@@ -27,10 +27,91 @@
 /* $Id$ */
 
 class Adobe_Font_Metrics {
-  var $f;
+  private $f;
   
-  function __construct($file) {
+  /**
+   * @var Font_TrueType
+   */
+  private $font;
+  
+  function __construct(Font_TrueType $font) {
+    $this->font = $font;
+  }
+  
+  function write($file){
     $this->f = fopen($file, "w+");
+    
+    $font = $this->font;
+    $data = $font->data;
+    
+    $this->startSection("FontMetrics", 4.1);
+    $this->addPair("Notice", "Converted by PHP-font-lib");
+    $this->addPair("Comment", "http://php-font-lib.googlecode.com/");
+    $this->addPair("EncodingScheme", "FontSpecific");
+    
+    $nameRecords = $data["name"]["nameRecord"];
+    foreach($nameRecords as $id => $value) {
+      if (!isset(Font_TrueType::$nameIdCodes[$id]) || preg_match("/[\r\n]/", $value)) {
+        continue;
+      }
+      
+      $this->addPair(Font_TrueType::$nameIdCodes[$id], $value);
+    }
+    
+    $os2 = $data["OS/2"];
+    $this->addPair("Weight", ($os2["usWeightClass"] > 400 ? "Bold" : "Medium"));
+    
+    $post = $data["post"];
+    $this->addPair("ItalicAngle",        $post["italicAngle"]);
+    $this->addPair("IsFixedPitch",      ($post["isFixedPitch"] ? "true" : "false"));
+    $this->addPair("UnderlineThickness", $font->normalizeFUnit($post["underlineThickness"]));
+    $this->addPair("UnderlinePosition",  $font->normalizeFUnit($post["underlinePosition"]));
+    
+    $hhea = $data["hhea"];
+    $this->addPair("Ascender",  $font->normalizeFUnit($hhea["ascent"]));
+    $this->addPair("Descender", $font->normalizeFUnit($hhea["descent"]));
+    
+    $head = $data["head"];
+    $this->addArray("FontBBox", array(
+      $font->normalizeFUnit($head["xMin"]),
+      $font->normalizeFUnit($head["yMin"]),
+      $font->normalizeFUnit($head["xMax"]),
+      $font->normalizeFUnit($head["yMax"]),
+    ));
+    
+    $subtable = null;
+    foreach($data["cmap"]["subtables"] as $_subtable) {
+      if ($_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1) {
+        $subtable = $_subtable;
+        break;
+      }
+    }
+    
+    if ($subtable) {
+      $hmtx = $data["hmtx"]["hMetrics"];
+      $names = $data["post"]["names"];
+          
+      $this->startSection("CharMetrics", count($hmtx));
+      
+        //for($c = 0; $c < 0xFFFE; $c++) {
+        //  $g = $this->mapCharCode($c, $subtable);
+        //  if ($g == 0) continue;
+        
+        foreach($subtable["glyphIndexArray"] as $c => $g) {
+          if (empty($hmtx[$g])) continue;
+          
+          $this->addMetric(array(
+            "U" => $c,
+            "WX" => $font->normalizeFUnit($hmtx[$g]),
+            "N" => (isset($names[$g]) ? $names[$g] : sprintf("uni%04x", $c)),
+            "G" => $g,
+          ));
+        }
+        
+      $this->endSection("CharMetrics");
+    }
+      
+    $this->endSection("FontMetrics");
   }
   
   function addLine($line) {
