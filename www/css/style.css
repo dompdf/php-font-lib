@@ -1,0 +1,69 @@
+body {
+	font-size: 12px;
+	font-family: tahoma, verdana, arial, sans-serif;
+	margin: 0.5em;
+}
+
+ul {
+	list-style-position: inside;
+	padding-left: 0.4em;
+}
+
+pre {
+	font-size: 11px;
+}
+
+h2 {
+	border-bottom: 1px solid #ccc;
+}
+
+hr {
+	clear: both;
+}
+
+.unicode-map {
+  line-height: 0px;
+	font-size: 3px;
+	width: 512px;
+	border: 1px solid #333;
+}
+
+.unicode-map i, .unicode-map b {
+  display: inline-block;
+  width: 2px;
+  height: 2px;
+  position: relative;
+}
+
+.unicode-map i .info {
+  font-size: 12px;
+	line-height: 14px;
+}
+
+.unicode-map i s, .unicode-map b s {
+  text-decoration: none;
+  font-style: normal;
+	text-align: center;
+  display: none;
+  position: absolute;
+	border: 1px solid #999;
+	font-size: 32px;
+	background: #fff;
+  padding: 3px;
+	line-height: 1.2;
+	z-index: 5000;
+  bottom: 5px;
+  left: -12px;
+}
+
+.unicode-map i:hover s, .unicode-map b:hover s {
+	display: inline-block;
+}
+
+.unicode-map i {
+	background: #0f0;
+}
+
+.unicode-map b {
+  background: #999;
+}
