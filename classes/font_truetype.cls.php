@@ -112,26 +112,26 @@ class Font_TrueType extends Font_Binary_Stream {
   );
   
   static $nameIdCodes = array(
-    0 => "Copyright",
-    1 => "FontFamily",
-    2 => "FontSubfamily",
-    3 => "UniqueID",
-    4 => "FullName",
-    5 => "Version",
-    6 => "PostScriptName",
-    7 => "Trademark",
-    8 => "Manufacturer",
-    9 => "Designer",
-    10  => "Description",
-    11  => "FontVendorURL",
-    12  => "FontDesignerURL",
-    13  => "LicenseDescription",
-    14  => "LicenseURL",
+    0  => "Copyright",
+    1  => "FontFamily",
+    2  => "FontSubfamily",
+    3  => "UniqueID",
+    4  => "FullName",
+    5  => "Version",
+    6  => "PostScriptName",
+    7  => "Trademark",
+    8  => "Manufacturer",
+    9  => "Designer",
+    10 => "Description",
+    11 => "FontVendorURL",
+    12 => "FontDesignerURL",
+    13 => "LicenseDescription",
+    14 => "LicenseURL",
  // 15
-    16  => "PreferredFamily",
-    17  => "PreferredSubfamily",
-    18  => "CompatibleFullName",
-    19  => "SampleText",
+    16 => "PreferredFamily",
+    17 => "PreferredSubfamily",
+    18 => "CompatibleFullName",
+    19 => "SampleText",
   );
   
   static $platforms = array(
@@ -314,6 +314,7 @@ class Font_TrueType extends Font_Binary_Stream {
     $this->parseNAME();
     $this->parseOS2();
     $this->parsePOST();
+    $this->parseKERN();
   }
   
   function parseHEAD() {
@@ -353,9 +354,10 @@ class Font_TrueType extends Font_Binary_Stream {
     foreach($this->data["cmap"]["subtables"] as &$subtable) {
       $this->seek($this->table["cmap"]->offset + $subtable["offset"]);
       
-      $format = $this->readUInt16();
+      $subtable["format"] = $this->readUInt16();
       
-      if($format != 4) continue;
+      // @todo Only CMAP version 4
+      if($subtable["format"] != 4) continue;
       
       $pack = "nlength/nlanguage/nsegCountX2/nsearchRange/nentrySelector/nrangeShift";
       $subtable += unpack($pack, $this->read(12));
@@ -577,7 +579,6 @@ class Font_TrueType extends Font_Binary_Stream {
             $names[$g] = self::$macCharNames[$index];
           }
           else {
-            if(!isset($namesPascal[$index - 258])) var_dump($g);
             $names[$g] = $namesPascal[$index - 258];
           }
         }
@@ -600,6 +601,71 @@ class Font_TrueType extends Font_Binary_Stream {
     }
     
     $data["names"] = $names;
+    
+    $this->data[$name] = $data;
+    $this->quitTag();
+  }
+  
+  function parseKERN(){
+    $name = "kern";
+    
+    if (!$this->seekTag($name)){
+      return;
+    }
+    
+    $tableOffset = ftell($this->f);
+    
+    $data = array(
+      "version"    => $this->readUInt16(),
+      "nTables"    => $this->readUInt16(),
+    
+      // only the first subtable will be parsed
+      "subtableVersion" => $this->readUInt16(),
+      "length"     => $this->readUInt16(),
+      "coverage"   => $this->readUInt16(),
+    );
+    
+    $data["format"] = ($data["coverage"] >> 8);
+    
+    $subtable = array();
+    
+    switch($data["format"]) {
+      case 0:
+      $subtable = array(
+        "nPairs"        => $this->readUInt16(),
+        "searchRange"   => $this->readUInt16(),
+        "entrySelector" => $this->readUInt16(),
+        "rangeShift"    => $this->readUInt16(),
+      );
+      
+      $pairs = array();
+      $tree = array();
+       
+      for ($i = 0; $i < $subtable["nPairs"]; $i++) {
+        $left  = $this->readUInt16();
+        $right = $this->readUInt16();
+        $value = $this->readInt16();
+        
+        $pairs[] = array(
+          "left"  => $left,
+          "right" => $right,
+          "value" => $value,
+        );
+        
+        $tree[$left][$right] = $value;
+      }
+      
+      //$subtable["pairs"] = $pairs;
+      $subtable["tree"] = $tree;
+      break;
+      
+      case 1:
+      case 2:
+      case 3:
+      break;
+    }
+    
+    $data["subtable"] = $subtable;
     
     $this->data[$name] = $data;
     $this->quitTag();

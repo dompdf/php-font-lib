@@ -68,11 +68,7 @@ class Font_EOT extends Font_TrueType {
   }
   
   function parse() {
-    $this->parseHeader();
-    return; // WIP
-    /*
-    $this->parseTableEntries();
-    $this->readData();*/
+    exit("EOT not supported yet");
   }
   
   public function readUInt16() {
