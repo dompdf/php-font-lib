@@ -291,6 +291,10 @@ class Font_TrueType extends Font_Binary_Stream {
   }
   
   function parseHeader(){
+		if (isset($this->sfntVersion)) {
+      return;
+		}
+		
     $this->seek($this->tableOffset);
     $this->sfntVersion   = $this->readFixed();
     

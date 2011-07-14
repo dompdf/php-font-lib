@@ -34,6 +34,10 @@ class Font_WOFF extends Font_TrueType {
   private $fileOffset = 0;
   
   function parseHeader(){
+		if (isset($this->sfntVersion)) {
+      return;
+		}
+		
     $this->seek(0);
     $this->sfntVersion   = $this->readFixed();
     
@@ -96,6 +100,12 @@ class Font_WOFF extends Font_TrueType {
   }
   
   function parseTableEntries(){
+    $this->parseHeader();
+    
+    if (!empty($this->table)) {
+      return;
+    }
+    
     for($i = 0; $i < $this->numTables; $i++) {
       $str = $this->read(Font_WOFF_Table_Directory_Entry::$entrySize);
       $entry = new Font_WOFF_Table_Directory_Entry($str);
