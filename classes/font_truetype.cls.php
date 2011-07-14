@@ -279,9 +279,15 @@ class Font_TrueType extends Font_Binary_Stream {
   }
   
   function parse() {
-    $this->parseHeader();
-    $this->parseTableEntries();
-    $this->readData();
+    $this->parseHEAD();
+    $this->parseHHEA();
+    $this->parseMAXP();
+    $this->parseCMAP();
+    $this->parseHMTX();
+    $this->parseNAME();
+    $this->parseOS2();
+    $this->parsePOST();
+    $this->parseKERN();
   }
   
   function parseHeader(){
@@ -298,23 +304,17 @@ class Font_TrueType extends Font_Binary_Stream {
   }
   
   function parseTableEntries(){
+    $this->parseHeader();
+    
+    if (!empty($this->table)) {
+      return;
+    }
+    
     for($i = 0; $i < $this->numTables; $i++) {
       $str = $this->read(Font_TrueType_Table_Directory_Entry::$entrySize);
       $entry = new Font_TrueType_Table_Directory_Entry($str);
       $this->table[$entry->tag] = $entry;
     }
-  }
-  
-  function readData(){
-    $this->parseHEAD();
-    $this->parseHHEA();
-    $this->parseMAXP();
-    $this->parseCMAP();
-    $this->parseHMTX();
-    $this->parseNAME();
-    $this->parseOS2();
-    $this->parsePOST();
-    $this->parseKERN();
   }
   
   function parseHEAD() {
@@ -566,7 +566,8 @@ class Font_TrueType extends Font_Binary_Stream {
           $glyphNameIndex[] = $this->readUInt16();
         }
         
-        $num = max($data["numberOfGlyphs"] - 257, $this->data["maxp"]["numGlyphs"]);
+        $maxp = $this->getData("maxp");
+        $num = max($data["numberOfGlyphs"] - 257, $maxp["numGlyphs"]);
         
         $namesPascal = array();
         for($i = 0; $i < $num; $i++) {
@@ -676,6 +677,8 @@ class Font_TrueType extends Font_Binary_Stream {
   }
   
   protected function seekTag($tag) {
+    $this->parseTableEntries();
+    
     if (!isset($this->table[$tag])) {
       return false;
     }
@@ -699,7 +702,9 @@ class Font_TrueType extends Font_Binary_Stream {
     if (empty($this->data[$name])) {
       $method = "parse".(preg_replace("/[^A-Z0-9]/", "", strtoupper($name))); 
       if (method_exists($this, $method)) {
+        $pos = ftell($this->f);
         $this->$method();
+        $this->seek($pos);
       }
     }
     

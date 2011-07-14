@@ -28,16 +28,18 @@ $unicodemap = @$_GET["unicodemap"];
 $t = microtime(true);
 
 $font = Font::load($fontfile);
-$font->parse();
 
 if ($font instanceof Font_TrueType_Collection) {
   $font = $font->getFont(0);
-  $font->parse();
 }
 
 //$font->saveAdobeFontMetrics("$fontfile.ufm");
 
-if ($unicodemap) { ?>
+if ($unicodemap) { 
+  $font->parseCMAP();
+  $font->parsePOST();
+  
+  ?>
 
 <div class="unicode-map">
   <?php 
@@ -76,7 +78,9 @@ if ($unicodemap) { ?>
 
 <?php
 } 
-else { ?>
+else { 
+  $font->parse();
+  ?>
 <span style="float: right;">
   Memory: <?php echo (memory_get_peak_usage(true) / 1024); ?>KB &mdash;
   Time: <?php echo round(microtime(true) - $t, 4); ?>s
