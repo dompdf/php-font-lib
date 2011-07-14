@@ -113,7 +113,7 @@ class Font_TrueType extends Font_Binary_Stream {
   
   static $nameIdCodes = array(
     0  => "Copyright",
-    1  => "FontFamily",
+    1  => "FontName",
     2  => "FontSubfamily",
     3  => "UniqueID",
     4  => "FullName",
@@ -359,8 +359,16 @@ class Font_TrueType extends Font_Binary_Stream {
       // @todo Only CMAP version 4
       if($subtable["format"] != 4) continue;
       
-      $pack = "nlength/nlanguage/nsegCountX2/nsearchRange/nentrySelector/nrangeShift";
-      $subtable += unpack($pack, $this->read(12));
+      $pack = array(
+        "length"        => self::uint16, 
+        "language"      => self::uint16, 
+        "segCountX2"    => self::uint16, 
+        "searchRange"   => self::uint16, 
+        "entrySelector" => self::uint16, 
+        "rangeShift"    => self::uint16,
+      );
+      
+      $subtable += $this->unpack($pack);
       $segCount = $subtable["segCountX2"] / 2;
       $subtable["segCount"] = $segCount;
       
@@ -381,6 +389,8 @@ class Font_TrueType extends Font_Binary_Stream {
         $idDelta[] = $this->readUInt16();
       }
       
+      $ro_start = ftell($this->f);
+      
       $idRangeOffset = array();
       for($i = 0; $i < $segCount; $i++) {
         $idRangeOffset[] = $this->readUInt16();
@@ -397,7 +407,23 @@ class Font_TrueType extends Font_Binary_Stream {
           $this->seek($subtable["offset"] + 2 * $i + $ro);
           
         for($c = $c1; $c <= $c2; $c++) {
-          if($c == 0xFFFF)
+          if ($ro == 0)
+            $gid = ($c + $d) & 0xFFFF;
+          else {
+            $offset = ($c - $c1) * 2 + $ro;
+            $offset = $ro_start + 2 * $i + $offset;
+            
+            $this->seek($offset);
+            $gid = $this->readUInt16();
+            
+            if ($gid != 0)
+               $gid = ($gid + $d) & 0xFFFF;
+          }
+          
+          if($gid > 0) {
+            $glyphIndexArray[$c] = $gid;
+          }
+          /*if($c == 0xFFFF)
             break;
             
           if($ro > 0){
@@ -412,7 +438,7 @@ class Font_TrueType extends Font_Binary_Stream {
             
           if($gid > 0) {
             $glyphIndexArray[$c] = $gid;
-          }
+          }*/
         }
       }
       
@@ -542,6 +568,11 @@ class Font_TrueType extends Font_Binary_Stream {
     $data["fsSelection"] = $this->readUInt16();
     $data["fsFirstCharIndex"] = $this->readUInt16();
     $data["fsLastCharIndex"] = $this->readUInt16();
+    $data["typoAscender"] = $this->readInt16();
+    $data["typoDescender"] = $this->readInt16();
+    $data["typoLineGap"] = $this->readInt16();
+    $data["winAscent"] = $this->readInt16();
+    $data["winDescent"] = $this->readInt16();
     
     $this->quitTag();
   }

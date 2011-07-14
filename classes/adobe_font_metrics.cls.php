@@ -68,8 +68,17 @@ class Adobe_Font_Metrics {
     $this->addPair("UnderlinePosition",  $font->normalizeFUnit($post["underlinePosition"]));
     
     $hhea = $data["hhea"];
-    $this->addPair("Ascender",  $font->normalizeFUnit($hhea["ascent"]));
-    $this->addPair("Descender", $font->normalizeFUnit($hhea["descent"]));
+    
+    if (isset($os2["typoAscender"])) {
+      $this->addPair("FontHeightOffset",  $font->normalizeFUnit($os2["typoLineGap"]));
+      $this->addPair("Ascender",  $font->normalizeFUnit($os2["typoAscender"]));
+      $this->addPair("Descender", $font->normalizeFUnit($os2["typoDescender"]));
+    }
+    else {
+      $this->addPair("FontHeightOffset",  $font->normalizeFUnit($hhea["lineGap"]));
+      $this->addPair("Ascender",  $font->normalizeFUnit($hhea["ascent"]));
+      $this->addPair("Descender", $font->normalizeFUnit($hhea["descent"]));
+    }
     
     $head = $data["head"];
     $this->addArray("FontBBox", array(
@@ -81,7 +90,7 @@ class Adobe_Font_Metrics {
     
     $subtable = null;
     foreach($data["cmap"]["subtables"] as $_subtable) {
-      if ($_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1) {
+      if ($_subtable["platformID"] == 0 || $_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1) {
         $subtable = $_subtable;
         break;
       }
@@ -92,13 +101,11 @@ class Adobe_Font_Metrics {
       $names = $data["post"]["names"];
           
       $this->startSection("CharMetrics", count($hmtx));
-      
-        //for($c = 0; $c < 0xFFFE; $c++) {
-        //  $g = $this->mapCharCode($c, $subtable);
-        //  if ($g == 0) continue;
         
         foreach($subtable["glyphIndexArray"] as $c => $g) {
-          if (empty($hmtx[$g])) continue;
+          if (!isset($hmtx[$g])) {
+            $hmtx[$g] = $hmtx[0];
+          }
           
           $this->addMetric(array(
             "U" => $c,
