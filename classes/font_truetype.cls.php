@@ -821,8 +821,8 @@ class Font_TrueType extends Font_Binary_Stream {
     }
   }
   
-  function saveAdobeFontMetrics($file) {
+  function saveAdobeFontMetrics($file, $encoding = null) {
     $afm = new Adobe_Font_Metrics($this);
-    $afm->write($file);
+    $afm->write($file, $encoding);
   }
 }

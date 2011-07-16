@@ -26,6 +26,8 @@
 
 /* $Id$ */
 
+require_once dirname(__FILE__)."/encoding_map.cls.php";
+
 class Adobe_Font_Metrics {
   private $f;
   
@@ -38,7 +40,18 @@ class Adobe_Font_Metrics {
     $this->font = $font;
   }
   
-  function write($file){
+  function write($file, $encoding = null){
+    if ($encoding) {
+      $encoding = preg_replace("/[^a-z0-9-_]/", "", $encoding);
+      $map_file = dirname(__FILE__)."/../maps/$encoding.map";
+      if (!file_exists($map_file)) {
+        throw new Exception("Unkown encoding ($encoding)");
+      }
+      
+      $map = new Encoding_Map($map_file);
+      $map_data = $map->parse();
+    }
+    
     $this->f = fopen($file, "w+");
     
     $font = $this->font;
@@ -46,7 +59,9 @@ class Adobe_Font_Metrics {
     $this->startSection("FontMetrics", 4.1);
     $this->addPair("Notice", "Converted by PHP-font-lib");
     $this->addPair("Comment", "http://php-font-lib.googlecode.com/");
-    $this->addPair("EncodingScheme", "FontSpecific");
+    
+    $encoding_scheme = ($encoding ? $encoding : "FontSpecific");
+    $this->addPair("EncodingScheme", $encoding_scheme);
     
     $nameRecords = $font->getData("name", "nameRecord");
     foreach($nameRecords as $id => $value) {
@@ -102,6 +117,26 @@ class Adobe_Font_Metrics {
       
       $this->startSection("CharMetrics", count($hmtx));
         
+      if ($encoding)  {
+        foreach($map_data as $code => $value) {
+          list($c, $name) = $value;
+          
+          if (!isset($glyphIndexArray[$c])) continue;
+          
+          $g = $glyphIndexArray[$c];
+          
+          if (!isset($hmtx[$g])) {
+            $hmtx[$g] = $hmtx[0];
+          }
+          
+          $this->addMetric(array(
+            "C"  => ($code > 255 ? -1 : $code),
+            "WX" => $font->normalizeFUnit($hmtx[$g]),
+            "N"  => $name,
+          ));
+        }
+      }
+      else {
         foreach($glyphIndexArray as $c => $g) {
           if (!isset($hmtx[$g])) {
             $hmtx[$g] = $hmtx[0];
@@ -114,13 +149,14 @@ class Adobe_Font_Metrics {
             "G" => $g,
           ));
         }
+      }
         
       $this->endSection("CharMetrics");
     
       $kern = $font->getData("kern", "subtable");
       $tree = $kern["tree"];
       
-      if (is_array($tree)) {
+      if (!$encoding && is_array($tree)) {
         $this->startSection("KernData");
           $this->startSection("KernPairs", count($tree, COUNT_RECURSIVE) - count($tree));
             
