@@ -42,14 +42,13 @@ class Adobe_Font_Metrics {
     $this->f = fopen($file, "w+");
     
     $font = $this->font;
-    $data = $font->data;
     
     $this->startSection("FontMetrics", 4.1);
     $this->addPair("Notice", "Converted by PHP-font-lib");
     $this->addPair("Comment", "http://php-font-lib.googlecode.com/");
     $this->addPair("EncodingScheme", "FontSpecific");
     
-    $nameRecords = $data["name"]["nameRecord"];
+    $nameRecords = $font->getData("name", "nameRecord");
     foreach($nameRecords as $id => $value) {
       if (!isset(Font_TrueType::$nameIdCodes[$id]) || preg_match("/[\r\n]/", $value)) {
         continue;
@@ -58,16 +57,16 @@ class Adobe_Font_Metrics {
       $this->addPair(Font_TrueType::$nameIdCodes[$id], $value);
     }
     
-    $os2 = $data["OS/2"];
+    $os2 = $font->getData("OS/2");
     $this->addPair("Weight", ($os2["usWeightClass"] > 400 ? "Bold" : "Medium"));
     
-    $post = $data["post"];
+    $post = $font->getData("post");
     $this->addPair("ItalicAngle",        $post["italicAngle"]);
     $this->addPair("IsFixedPitch",      ($post["isFixedPitch"] ? "true" : "false"));
     $this->addPair("UnderlineThickness", $font->normalizeFUnit($post["underlineThickness"]));
     $this->addPair("UnderlinePosition",  $font->normalizeFUnit($post["underlinePosition"]));
     
-    $hhea = $data["hhea"];
+    $hhea = $font->getData("hhea");
     
     if (isset($os2["typoAscender"])) {
       $this->addPair("FontHeightOffset",  $font->normalizeFUnit($os2["typoLineGap"]));
@@ -80,7 +79,7 @@ class Adobe_Font_Metrics {
       $this->addPair("Descender", $font->normalizeFUnit($hhea["descent"]));
     }
     
-    $head = $data["head"];
+    $head = $font->getData("head");
     $this->addArray("FontBBox", array(
       $font->normalizeFUnit($head["xMin"]),
       $font->normalizeFUnit($head["yMin"]),
@@ -89,7 +88,7 @@ class Adobe_Font_Metrics {
     ));
     
     $subtable = null;
-    foreach($data["cmap"]["subtables"] as $_subtable) {
+    foreach($font->getData("cmap", "subtables") as $_subtable) {
       if ($_subtable["platformID"] == 0 || $_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1) {
         $subtable = $_subtable;
         break;
@@ -97,12 +96,13 @@ class Adobe_Font_Metrics {
     }
     
     if ($subtable) {
-      $hmtx = $data["hmtx"]["hMetrics"];
-      $names = $data["post"]["names"];
-          
+      $hmtx = $font->getData("hmtx", "hMetrics");
+      $names = $font->getData("post", "names");
+      $glyphIndexArray = $subtable["glyphIndexArray"];
+      
       $this->startSection("CharMetrics", count($hmtx));
         
-        foreach($subtable["glyphIndexArray"] as $c => $g) {
+        foreach($glyphIndexArray as $c => $g) {
           if (!isset($hmtx[$g])) {
             $hmtx[$g] = $hmtx[0];
           }
@@ -116,6 +116,41 @@ class Adobe_Font_Metrics {
         }
         
       $this->endSection("CharMetrics");
+    
+      $kern = $font->getData("kern", "subtable");
+      $tree = $kern["tree"];
+      
+      if (is_array($tree)) {
+        $this->startSection("KernData");
+          $this->startSection("KernPairs", count($tree, COUNT_RECURSIVE) - count($tree));
+            
+          foreach($tree as $left => $values) {
+            if (!is_array($values)) continue;
+            if (!isset($glyphIndexArray[$left])) continue;
+            
+            $left_gid = $glyphIndexArray[$left];
+            
+            if (!isset($names[$left_gid])) continue;
+            
+            $left_name = $names[$left_gid];
+            
+            $this->addLine("");
+            
+            foreach($values as $right => $value) {
+              if (!isset($glyphIndexArray[$right])) continue;
+              
+              $right_gid = $glyphIndexArray[$right];
+            
+              if (!isset($names[$right_gid])) continue;
+              
+              $right_name = $names[$right_gid];
+              $this->addPair("KPX", "$left_name $right_name $value");
+            }
+          }
+            
+          $this->endSection("KernPairs");
+        $this->endSection("KernData");
+      }
     }
       
     $this->endSection("FontMetrics");
@@ -141,7 +176,7 @@ class Adobe_Font_Metrics {
     $this->addLine(implode(" ; ", $array));
   }
 
-  function startSection($name, $value) {
+  function startSection($name, $value = "") {
     $this->addLine("Start$name $value");
   }
   

@@ -34,28 +34,28 @@ class Font_WOFF extends Font_TrueType {
   private $fileOffset = 0;
   
   function parseHeader(){
-		if (isset($this->sfntVersion)) {
+    if (!empty($this->header)) {
       return;
-		}
-		
-    $this->seek(0);
-    $this->sfntVersion   = $this->readFixed();
+    }
     
-    $this->seek(0);
-    $this->sfntVersionText   = $this->read(4);
+    $this->header = $this->unpack(array(
+      "format"         => self::uint32,
+      "flavor"         => self::uint32,
+      "length"         => self::uint32,
+      "numTables"      => self::uint16,
+                          self::uint16,
+      "totalSfntSize"  => self::uint32,
+      "majorVersion"   => self::uint16,
+      "minorVersion"   => self::uint16,
+      "metaOffset"     => self::uint32,
+      "metaLength"     => self::uint32,
+      "metaOrigLength" => self::uint32,
+      "privOffset"     => self::uint32,
+      "privLength"     => self::uint32,
+    ));
     
-    $this->flavor     = $this->readUInt32();
-    $this->length     = $this->readUInt32();
-    $this->numTables     = $this->readUInt16();
-    $this->readUInt16();
-    $this->totalSfntSize     = $this->readUInt32();
-    $this->majorVersion     = $this->readUInt16();
-    $this->minorVersion     = $this->readUInt16();
-    $this->metaOffset     = $this->readUInt32();
-    $this->metaLength     = $this->readUInt32();
-    $this->metaOrigLength     = $this->readUInt32();
-    $this->privOffset     = $this->readUInt32();
-    $this->privLength     = $this->readUInt32();
+    $format = $this->header["format"];
+    $this->header["formatText"] = chr(($format >> 24) & 0xFF).chr(($format >> 16) & 0xFF).chr(($format >> 8) & 0xFF).chr($format & 0xFF);
   }
   
   function seekTag($tag) {
@@ -66,7 +66,7 @@ class Font_WOFF extends Font_TrueType {
     $tableEntry = $this->table[$tag];
     
     if ($tableEntry->length == $tableEntry->origLength) {
-      return;
+      return true;
     }
     
     $this->fileOffset = ftell($this->f);
@@ -106,7 +106,7 @@ class Font_WOFF extends Font_TrueType {
       return;
     }
     
-    for($i = 0; $i < $this->numTables; $i++) {
+    for($i = 0; $i < $this->header["numTables"]; $i++) {
       $str = $this->read(Font_WOFF_Table_Directory_Entry::$entrySize);
       $entry = new Font_WOFF_Table_Directory_Entry($str);
       $this->table[$entry->tag] = $entry;

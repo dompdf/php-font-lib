@@ -31,16 +31,12 @@ require_once dirname(__FILE__)."/font_truetype_table_directory_entry.cls.php";
 require_once dirname(__FILE__)."/adobe_font_metrics.cls.php";
 
 class Font_TrueType extends Font_Binary_Stream {
-  public $sfntVersion;
-  public $sfntVersionText;
-  public $numTables;
-  public $searchRange;
-  public $entrySelector;
-  public $rangeShift;
+  public $header = array();
+  
   private $tableOffset = 0; // Used for TTC
   
   protected $table = array();
-  public $data = array();
+  protected $data = array();
   
   static $tableFormat = array(
     "head" => array(
@@ -271,6 +267,7 @@ class Font_TrueType extends Font_Binary_Stream {
   );
   
   function getTable(){
+    $this->parseTableEntries();
     return $this->table;
   }
   
@@ -288,23 +285,27 @@ class Font_TrueType extends Font_Binary_Stream {
     $this->parseOS2();
     $this->parsePOST();
     $this->parseKERN();
+    $this->parseLOCA();
+    $this->parseGLYF();
   }
   
   function parseHeader(){
-		if (isset($this->sfntVersion)) {
+		if (!empty($this->header)) {
       return;
 		}
 		
     $this->seek($this->tableOffset);
-    $this->sfntVersion   = $this->readFixed();
     
-    $this->seek($this->tableOffset);
-    $this->sfntVersionText   = $this->read(4);
+    $this->header = $this->unpack(array(
+      "format"        => self::uint32,
+      "numTables"     => self::uint16,
+      "searchRange"   => self::uint16,
+      "entrySelector" => self::uint16,
+      "rangeShift"    => self::uint16,
+    ));
     
-    $this->numTables     = $this->readUInt16();
-    $this->searchRange   = $this->readUInt16();
-    $this->entrySelector = $this->readUInt16();
-    $this->rangeShift    = $this->readUInt16();
+    $format = $this->header["format"];
+    $this->header["formatText"] = chr(($format >> 24) & 0xFF).chr(($format >> 16) & 0xFF).chr(($format >> 8) & 0xFF).chr($format & 0xFF);
   }
   
   function parseTableEntries(){
@@ -314,7 +315,7 @@ class Font_TrueType extends Font_Binary_Stream {
       return;
     }
     
-    for($i = 0; $i < $this->numTables; $i++) {
+    for($i = 0; $i < $this->header["numTables"]; $i++) {
       $str = $this->read(Font_TrueType_Table_Directory_Entry::$entrySize);
       $entry = new Font_TrueType_Table_Directory_Entry($str);
       $this->table[$entry->tag] = $entry;
@@ -520,10 +521,10 @@ class Font_TrueType extends Font_Binary_Stream {
   }
   
   function parseHMTX(){
+    $numOfLongHorMetrics = $this->getData("hhea", "numOfLongHorMetrics");
+    
     $this->seekTag("hmtx");
     
-    $hheaData = $this->getData("hhea");
-    $numOfLongHorMetrics = $hheaData["numOfLongHorMetrics"];
     $this->data["hmtx"]["numOfLongHorMetrics"] = $numOfLongHorMetrics;
     
     $hMetrics = array();
@@ -582,6 +583,8 @@ class Font_TrueType extends Font_Binary_Stream {
   }
   
   function parsePOST(){
+    $numGlyphs = $this->getData("maxp", "numGlyphs");
+    
     $name = "post";
     
     $this->seekTag($name);
@@ -601,8 +604,7 @@ class Font_TrueType extends Font_Binary_Stream {
           $glyphNameIndex[] = $this->readUInt16();
         }
         
-        $maxp = $this->getData("maxp");
-        $num = max($data["numberOfGlyphs"] - 257, $maxp["numGlyphs"]);
+        $num = max($data["numberOfGlyphs"] - 257, $numGlyphs);
         
         $namesPascal = array();
         for($i = 0; $i < $num; $i++) {
@@ -706,9 +708,75 @@ class Font_TrueType extends Font_Binary_Stream {
     $this->data[$name] = $data;
     $this->quitTag();
   }
+
+  function parseLOCA(){
+    $indexToLocFormat = $this->getData("head", "indexToLocFormat");
+    $numGlyphs = $this->getData("maxp", "numGlyphs");
+    
+    $name = "loca";
+    
+    if (!$this->seekTag($name)){
+      return;
+    }
+    
+    $tableOffset = ftell($this->f);
+    
+    $data = array();
+    
+    $this->seek($tableOffset);
+      
+    // 2 bytes
+    if ($indexToLocFormat == 0) {
+      $d = $this->read(($numGlyphs + 1) * 2);
+      $loc = unpack("n*", $d);
+      
+      for ($i = 0; $i <= $numGlyphs; $i++) {
+        $data[] = $loc[$i+1] * 2;
+      }
+    }
+    
+    // 4 bytes
+    else if ($indexToLocFormat == 1) {
+      $d = $this->read(($numGlyphs + 1) * 4);
+      $loc = unpack("N*", $d);
+      
+      for ($i = 0; $i <= $numGlyphs; $i++) {
+        $data[] = $loc[$i+1];
+      }
+    }
+    
+    $this->data[$name] = $data;
+    $this->quitTag();
+  }
+  
+  function parseGLYF(){
+    $indexToLocFormat = $this->getData("head", "indexToLocFormat");
+    $numGlyphs = $this->getData("maxp", "numGlyphs");
+    
+    $name = "glyf";
+    
+    if (!$this->seekTag($name)){
+      return;
+    }
+    
+    $tableOffset = ftell($this->f);
+    
+    $data = $this->unpack(array(
+      "numberOfContours" => self::int16,
+      "xMin" => self::FWord,
+      "yMin" => self::FWord,
+      "xMax" => self::FWord,
+      "yMax" => self::FWord,
+    ));
+    
+    $this->seek($tableOffset);
+    
+    $this->data[$name] = $data;
+    $this->quitTag();
+  }
   
   function normalizeFUnit($value, $base = 1000){
-    return round($value * ($base / $this->data["head"]["unitsPerEm"]));
+    return round($value * ($base / $this->getData("head", "unitsPerEm")));
   }
   
   protected function seekTag($tag) {
@@ -729,10 +797,8 @@ class Font_TrueType extends Font_Binary_Stream {
     $this->quitTag();
   }
   
-  public function getData($name) {
-    if (empty($this->table)) {
-      $this->parseTableEntries();
-    }
+  public function getData($name, $key = null) {
+    $this->parseTableEntries();
     
     if (empty($this->data[$name])) {
       $method = "parse".(preg_replace("/[^A-Z0-9]/", "", strtoupper($name))); 
@@ -743,7 +809,16 @@ class Font_TrueType extends Font_Binary_Stream {
       }
     }
     
-    return $this->data[$name];
+    if (!isset($this->data[$name])) {
+      return null;
+    }
+    
+    if (!$key) {
+      return $this->data[$name];
+    }
+    else {
+      return $this->data[$name][$key];
+    }
   }
   
   function saveAdobeFontMetrics($file) {
