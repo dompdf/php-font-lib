@@ -26,18 +26,53 @@
 
 /* $Id$ */
 
-require_once dirname(__FILE__)."/font_truetype_table_directory_entry.cls.php";
+require_once dirname(__FILE__)."/font_table_directory_entry.cls.php";
 
-class Font_WOFF_Table_Directory_Entry extends Font_TrueType_Table_Directory_Entry {
-  var $origLength;
+class Font_WOFF_Table_Directory_Entry extends Font_Table_Directory_Entry {
+  function __construct(Font_WOFF $font) {
+    parent::__construct($font);
+    $this->offset = $this->readUInt32();
+    $this->length = $this->readUInt32();
+    $this->origLength = $this->readUInt32();
+    $this->checksum = $this->readUInt32();
+  }
   
-  static $entrySize = 20;
+  function start(){
+    parent::start();
+    
+    if ($this->length == $this->origLength) {
+      return true;
+    }
+    
+    $font = $this->font;
+    $font->fileOffset = $font->pos();
+    
+    $data = $font->read($this->length);
+    
+    // PHP 5.1+
+    $f = @fopen("php://temp", "rb+");
+    
+    if (!$f) {
+      $f = fopen(tempnam(sys_get_temp_dir(), "fnt"), "rb+");
+    }
+    
+    fwrite($f, gzuncompress($data));
+    rewind($f);
+    
+    $font->origF = $font->f;
+    $font->f = $f;
+  }
   
-  function __construct($str) {
-    $this->tag = substr($str, 0, 4);
-    $this->offset = $this->readUInt32(substr($str, 4, 4));
-    $this->length = $this->readUInt32(substr($str, 8, 4));
-    $this->origLength = $this->readUInt32(substr($str, 12, 4));
-    $this->checksum = $this->readUInt32(substr($str, 16, 4));
+  function end(){
+    parent::end();
+    
+    $font = $this->font;
+    
+    if ($font->origF) {
+      fclose($font->f);
+      $font->f = $font->origF;
+      $font->origF = null;
+      $font->fileOffset = 0;
+    }
   }
 }

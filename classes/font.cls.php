@@ -48,7 +48,7 @@ class Font {
         
       // Unknown type or EOT
       default: 
-        $magicNumber = $header = file_get_contents($file, false, null, 34, 2);
+        $magicNumber = file_get_contents($file, false, null, 34, 2);
         
         if ($magicNumber === "LP") {
           $class = "Font_EOT";

@@ -28,88 +28,22 @@
 
 require_once dirname(__FILE__)."/font_truetype.cls.php";
 require_once dirname(__FILE__)."/font_woff_table_directory_entry.cls.php";
+require_once dirname(__FILE__)."/font_woff_header.cls.php";
 
 class Font_WOFF extends Font_TrueType {
-  private $origF;
-  private $fileOffset = 0;
+  public $origF;
+  public $fileOffset = 0;
   
   function parseHeader(){
     if (!empty($this->header)) {
       return;
     }
     
-    $this->header = $this->unpack(array(
-      "format"         => self::uint32,
-      "flavor"         => self::uint32,
-      "length"         => self::uint32,
-      "numTables"      => self::uint16,
-                          self::uint16,
-      "totalSfntSize"  => self::uint32,
-      "majorVersion"   => self::uint16,
-      "minorVersion"   => self::uint16,
-      "metaOffset"     => self::uint32,
-      "metaLength"     => self::uint32,
-      "metaOrigLength" => self::uint32,
-      "privOffset"     => self::uint32,
-      "privLength"     => self::uint32,
-    ));
-    
-    $format = $this->header["format"];
-    $this->header["formatText"] = chr(($format >> 24) & 0xFF).chr(($format >> 16) & 0xFF).chr(($format >> 8) & 0xFF).chr($format & 0xFF);
-  }
-  
-  function seekTag($tag) {
-    if (!parent::seekTag($tag)) {
-      return false;
-    }
-    
-    $tableEntry = $this->table[$tag];
-    
-    if ($tableEntry->length == $tableEntry->origLength) {
-      return true;
-    }
-    
-    $this->fileOffset = ftell($this->f);
-    $data = $this->read($tableEntry->length);
-    
-    // PHP 5.1+
-    $f = @fopen("php://temp", "rb+");
-    
-    if (!$f) {
-      $f = fopen(tempnam(sys_get_temp_dir(), "fnt"), "rb+");
-    }
-    
-    fwrite($f, gzuncompress($data));
-    rewind($f);
-    
-    $this->origF = $this->f;
-    $this->f = $f;
+    $this->header = new Font_WOFF_Header($this);
+    $this->header->parse();
   }
   
   public function seek($offset) {
     return fseek($this->f, $offset - $this->fileOffset, SEEK_SET) == 0;
-  }
-  
-  function quitTag(){
-    if ($this->origF) {
-      fclose($this->f);
-      $this->f = $this->origF;
-      $this->origF = null;
-      $this->fileOffset = 0;
-    }
-  }
-  
-  function parseTableEntries(){
-    $this->parseHeader();
-    
-    if (!empty($this->table)) {
-      return;
-    }
-    
-    for($i = 0; $i < $this->header["numTables"]; $i++) {
-      $str = $this->read(Font_WOFF_Table_Directory_Entry::$entrySize);
-      $entry = new Font_WOFF_Table_Directory_Entry($str);
-      $this->table[$entry->tag] = $entry;
-    }
   }
 }

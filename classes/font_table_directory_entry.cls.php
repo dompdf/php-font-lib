@@ -26,14 +26,42 @@
 
 /* $Id$ */
 
-require_once dirname(__FILE__)."/font_table_directory_entry.cls.php";
-
-class Font_TrueType_Table_Directory_Entry extends Font_Table_Directory_Entry {
+class Font_Table_Directory_Entry extends Font_Binary_Stream {
+  /**
+   * @var Font_TrueType
+   */
+  protected $font;
+  
+  var $tag;
+  var $checksum;
+  var $offset;
+  var $length;
+  
+  protected $origF;
+  
   function __construct(Font_TrueType $font) {
-    parent::__construct($font);
-    $this->checksum = $this->readUInt32();
-    $this->offset = $this->readUInt32();
-    $this->length = $this->readUInt32();
+    $this->font = $font;
+    $this->f = $font->f;
+    $this->tag = $this->read(4);
+  }
+  
+  function load($filename) {
+    // void
+  }
+  
+  /**
+   * @return Font_TrueType
+   */
+  function getFont() {
+    return $this->font;
+  }
+  
+  function start() {
+    $this->seek($this->offset);
+  }
+  
+  function end() {
+    //
   }
 }
 

@@ -26,14 +26,32 @@
 
 /* $Id$ */
 
-require_once dirname(__FILE__)."/font_table_directory_entry.cls.php";
-
-class Font_TrueType_Table_Directory_Entry extends Font_Table_Directory_Entry {
-  function __construct(Font_TrueType $font) {
-    parent::__construct($font);
-    $this->checksum = $this->readUInt32();
-    $this->offset = $this->readUInt32();
-    $this->length = $this->readUInt32();
+class Font_Table_head extends Font_Table {
+  protected $def = array(
+    "tableVersion"       => self::Fixed,
+    "fontRevision"       => self::Fixed,
+    "checkSumAdjustment" => self::uint32,
+    "magicNumber"        => self::uint32,
+    "flags"              => self::uint16,
+    "unitsPerEm"         => self::uint16,
+    "created"            => self::longDateTime,
+    "modified"           => self::longDateTime,
+    "xMin"               => self::FWord,
+    "yMin"               => self::FWord,
+    "xMax"               => self::FWord,
+    "yMax"               => self::FWord,
+    "macStyle"           => self::uint16,
+    "lowestRecPPEM"      => self::uint16,
+    "fontDirectionHint"  => self::int16,
+    "indexToLocFormat"   => self::int16,
+    "glyphDataFormat"    => self::int16,
+  );
+  
+  protected function _parse(){
+    parent::_parse();
+    
+    if($this->data["magicNumber"] != 0x5F0F3CF5) {
+      throw new Exception("Incorrect magic number (".dechex($this->data["magicNumber"]).")");
+    }
   }
 }
-

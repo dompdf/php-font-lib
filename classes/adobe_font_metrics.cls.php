@@ -63,8 +63,8 @@ class Adobe_Font_Metrics {
     $encoding_scheme = ($encoding ? $encoding : "FontSpecific");
     $this->addPair("EncodingScheme", $encoding_scheme);
     
-    $nameRecords = $font->getData("name", "nameRecord");
-    foreach($nameRecords as $id => $value) {
+    $records = $font->getData("name", "records");
+    foreach($records as $id => $value) {
       if (!isset(Font_TrueType::$nameIdCodes[$id]) || preg_match("/[\r\n]/", $value)) {
         continue;
       }
@@ -111,7 +111,7 @@ class Adobe_Font_Metrics {
     }
     
     if ($subtable) {
-      $hmtx = $font->getData("hmtx", "hMetrics");
+      $hmtx = $font->getData("hmtx");
       $names = $font->getData("post", "names");
       $glyphIndexArray = $subtable["glyphIndexArray"];
       

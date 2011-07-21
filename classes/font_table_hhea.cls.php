@@ -26,14 +26,24 @@
 
 /* $Id$ */
 
-require_once dirname(__FILE__)."/font_table_directory_entry.cls.php";
-
-class Font_TrueType_Table_Directory_Entry extends Font_Table_Directory_Entry {
-  function __construct(Font_TrueType $font) {
-    parent::__construct($font);
-    $this->checksum = $this->readUInt32();
-    $this->offset = $this->readUInt32();
-    $this->length = $this->readUInt32();
-  }
+class Font_Table_hhea extends Font_Table {
+  protected $def = array(
+    "version"             => self::Fixed,
+    "ascent"              => self::FWord,
+    "descent"             => self::FWord,
+    "lineGap"             => self::FWord,
+    "advanceWidthMax"     => self::uFWord,
+    "minLeftSideBearing"  => self::FWord,
+    "minRightSideBearing" => self::FWord,
+    "xMaxExtent"          => self::FWord,
+    "caretSlopeRise"      => self::int16,
+    "caretSlopeRun"       => self::int16,
+    "caretOffset"         => self::FWord,
+                             self::int16,
+                             self::int16,
+                             self::int16,
+                             self::int16,
+    "metricDataFormat"    => self::int16,
+    "numOfLongHorMetrics" => self::uint16,
+  );
 }
-

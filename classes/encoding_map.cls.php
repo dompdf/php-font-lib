@@ -24,7 +24,7 @@
  * @author Fabien Ménager
  */
 
-/* $Id: adobe_font_metrics.cls.php 19 2011-07-16 13:21:12Z fabien.menager $ */
+/* $Id$ */
 
 class Encoding_Map {
   private $f;

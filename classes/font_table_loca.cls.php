@@ -26,14 +26,35 @@
 
 /* $Id$ */
 
-require_once dirname(__FILE__)."/font_table_directory_entry.cls.php";
-
-class Font_TrueType_Table_Directory_Entry extends Font_Table_Directory_Entry {
-  function __construct(Font_TrueType $font) {
-    parent::__construct($font);
-    $this->checksum = $this->readUInt32();
-    $this->offset = $this->readUInt32();
-    $this->length = $this->readUInt32();
+class Font_Table_loca extends Font_Table {
+  protected function _parse(){
+    $font = $this->entry->getFont();
+    
+    $indexToLocFormat = $font->getData("head", "indexToLocFormat");
+    $numGlyphs = $font->getData("maxp", "numGlyphs");
+    
+    $data = array();
+    
+    // 2 bytes
+    if ($indexToLocFormat == 0) {
+      $d = $font->read(($numGlyphs + 1) * 2);
+      $loc = unpack("n*", $d);
+      
+      for ($i = 0; $i <= $numGlyphs; $i++) {
+        $data[] = $loc[$i+1] * 2;
+      }
+    }
+    
+    // 4 bytes
+    else if ($indexToLocFormat == 1) {
+      $d = $font->read(($numGlyphs + 1) * 4);
+      $loc = unpack("N*", $d);
+      
+      for ($i = 0; $i <= $numGlyphs; $i++) {
+        $data[] = $loc[$i+1];
+      }
+    }
+    
+    $this->data = $data;
   }
 }
-

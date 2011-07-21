@@ -26,14 +26,44 @@
 
 /* $Id$ */
 
-require_once dirname(__FILE__)."/font_table_directory_entry.cls.php";
-
-class Font_TrueType_Table_Directory_Entry extends Font_Table_Directory_Entry {
-  function __construct(Font_TrueType $font) {
-    parent::__construct($font);
-    $this->checksum = $this->readUInt32();
-    $this->offset = $this->readUInt32();
-    $this->length = $this->readUInt32();
+class Font_Table_name extends Font_Table {
+  protected function _parse(){
+    $font = $this->entry->getFont();
+    $data = array();
+    
+    $tableOffset = $font->pos();
+    
+    $data = $font->unpack(array(
+      "format"       => self::uint16,
+      "count"        => self::uint16,
+      "stringOffset" => self::uint16,
+    ));
+    
+    $records = array();
+    for($i = 0; $i < $data["count"]; $i++) {
+      $records[] = $font->unpack(array(
+        "platformID" => self::uint16,
+        "platformSpecificID" => self::uint16,
+        "languageID" => self::uint16,
+        "nameID" => self::uint16,
+        "length" => self::uint16,
+        "offset" => self::uint16,
+      ));
+    }
+    
+    $names = array();
+    foreach($records as $record) {
+      $font->seek($tableOffset + $data["stringOffset"] + $record["offset"]);
+      $s = $font->read($record["length"]);
+      
+      $s = str_replace(chr(0), '', $s);
+      //$s = preg_replace('|[ \[\](){}<>/%]|', '', $s);
+      
+      $names[$record["nameID"]] = $s;
+    }
+    
+    $data["records"] = $names;
+    
+    $this->data = $data;
   }
 }
-

@@ -26,14 +26,22 @@
 
 /* $Id$ */
 
-require_once dirname(__FILE__)."/font_table_directory_entry.cls.php";
+require_once dirname(__FILE__)."/font_truetype_header.cls.php";
 
-class Font_TrueType_Table_Directory_Entry extends Font_Table_Directory_Entry {
-  function __construct(Font_TrueType $font) {
-    parent::__construct($font);
-    $this->checksum = $this->readUInt32();
-    $this->offset = $this->readUInt32();
-    $this->length = $this->readUInt32();
-  }
+class Font_WOFF_Header extends Font_TrueType_Header {
+  protected $def = array(
+    "format"         => self::uint32,
+    "flavor"         => self::uint32,
+    "length"         => self::uint32,
+    "numTables"      => self::uint16,
+                        self::uint16,
+    "totalSfntSize"  => self::uint32,
+    "majorVersion"   => self::uint16,
+    "minorVersion"   => self::uint16,
+    "metaOffset"     => self::uint32,
+    "metaLength"     => self::uint32,
+    "metaOrigLength" => self::uint32,
+    "privOffset"     => self::uint32,
+    "privLength"     => self::uint32,
+  );
 }
-

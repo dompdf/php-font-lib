@@ -26,14 +26,25 @@
 
 /* $Id$ */
 
-require_once dirname(__FILE__)."/font_table_directory_entry.cls.php";
-
-class Font_TrueType_Table_Directory_Entry extends Font_Table_Directory_Entry {
-  function __construct(Font_TrueType $font) {
-    parent::__construct($font);
-    $this->checksum = $this->readUInt32();
-    $this->offset = $this->readUInt32();
-    $this->length = $this->readUInt32();
+class Font_Table_hmtx extends Font_Table {
+  protected function _parse(){
+    $font = $this->entry->getFont();
+    
+    $data = array();
+    
+    $numOfLongHorMetrics = $font->getData("hhea", "numOfLongHorMetrics");
+    for($i = 0; $i < $numOfLongHorMetrics; $i++) {
+      $advanceWidth = $font->readUInt16();
+      $leftSideBearing = $font->readUInt16();
+      $data[$i] = $advanceWidth;
+    }
+    
+    $numGlyphs = $font->getData("maxp", "numGlyphs");
+    if($numOfLongHorMetrics < $numGlyphs){
+      $lastWidth = end($data);
+      $data = array_pad($data, $numGlyphs, $lastWidth);
+    }
+    
+    $this->data = $data;
   }
 }
-
