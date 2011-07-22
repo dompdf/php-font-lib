@@ -78,15 +78,15 @@ else {
 
   //$font->saveAdobeFontMetrics("$fontfile.ufm");
 
-  $nameRecord = $font->getData("name", "nameRecord");
+  $records = $font->getData("name", "records");
   ?>
 <span style="float: right;">
   Memory: <?php echo (memory_get_peak_usage(true) / 1024); ?>KB &mdash;
   Time: <?php echo round(microtime(true) - $t, 4); ?>s
 </span>
 
-<h1><?php echo $nameRecord[3]; ?></h1>
-<h3><?php echo $nameRecord[5]; ?></h3>
+<h1><?php echo $records[3]; ?></h1>
+<h3><?php echo $records[5]; ?></h3>
 <hr />
 
 <div id="tabs">
