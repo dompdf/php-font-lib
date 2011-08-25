@@ -34,6 +34,7 @@ class Font_TrueType_Table_Directory_Entry extends Font_Table_Directory_Entry {
     $this->checksum = $this->readUInt32();
     $this->offset = $this->readUInt32();
     $this->length = $this->readUInt32();
+    $this->entryLength += 12;
   }
 }
 

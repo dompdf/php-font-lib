@@ -28,7 +28,7 @@
 
 class Font_Table_kern extends Font_Table {
   protected function _parse(){
-    $font = $this->entry->getFont();
+    $font = $this->getFont();
     
     $tableOffset = $font->pos();
     

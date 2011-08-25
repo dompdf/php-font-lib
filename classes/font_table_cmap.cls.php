@@ -27,71 +27,64 @@
 /* $Id$ */
 
 class Font_Table_cmap extends Font_Table {
+  private static $header_format = array(
+    "version"         => self::uint16,
+    "numberSubtables" => self::uint16,
+  );
+  
+  private static $subtable_header_format = array(
+    "platformID"         => self::uint16,
+    "platformSpecificID" => self::uint16,
+    "offset"             => self::uint32,
+  );
+  
+  private static $subtable_v4_format = array(
+    "length"        => self::uint16, 
+    "language"      => self::uint16, 
+    "segCountX2"    => self::uint16, 
+    "searchRange"   => self::uint16, 
+    "entrySelector" => self::uint16, 
+    "rangeShift"    => self::uint16,
+  );
+  
   protected function _parse(){
-    $font = $this->entry->getFont();
+    $font = $this->getFont();
     
-    $data = array(
-      "version"         => $font->readUInt16(),
-      "numberSubtables" => $font->readUInt16(),
-    );
+    $data = $font->unpack(self::$header_format);
     
     $subtables = array();
     for($i = 0; $i < $data["numberSubtables"]; $i++){
-      $subtables[] = array(
-        "platformID"         => $font->readUInt16(),
-        "platformSpecificID" => $font->readUInt16(),
-        "offset"             => $font->readUInt32(),
-      );
+      $subtables[] = $font->unpack(self::$subtable_header_format);
     }
     $data["subtables"] = $subtables;
     
     $tables = $font->getTable();
     $cmap_offset = $tables["cmap"]->offset;
     
-    foreach($data["subtables"] as &$subtable) {
+    foreach($data["subtables"] as $i => &$subtable) {
       $font->seek($cmap_offset + $subtable["offset"]);
       
       $subtable["format"] = $font->readUInt16();
       
       // @todo Only CMAP version 4
-      if($subtable["format"] != 4) continue;
+      if($subtable["format"] != 4) {
+        unset($data["subtables"][$i]);
+        continue;
+      }
       
-      $pack = array(
-        "length"        => self::uint16, 
-        "language"      => self::uint16, 
-        "segCountX2"    => self::uint16, 
-        "searchRange"   => self::uint16, 
-        "entrySelector" => self::uint16, 
-        "rangeShift"    => self::uint16,
-      );
-      
-      $subtable += $font->unpack($pack);
+      $subtable += $font->unpack(self::$subtable_v4_format);
       $segCount = $subtable["segCountX2"] / 2;
       $subtable["segCount"] = $segCount;
       
-      $endCode = array();
-      for($i = 0; $i < $segCount; $i++) {
-        $endCode[] = $font->readUInt16();
-      }
+      $endCode       = $font->r(array(self::uint16, $segCount));
       
       $font->readUInt16(); // reservedPad
-    
-      $startCode = array();
-      for($i = 0; $i < $segCount; $i++) {
-        $startCode[] = $font->readUInt16();
-      }
       
-      $idDelta = array();
-      for($i = 0; $i < $segCount; $i++) {
-        $idDelta[] = $font->readUInt16();
-      }
+      $startCode     = $font->r(array(self::uint16, $segCount));
+      $idDelta       = $font->r(array(self::uint16, $segCount));
       
-      $ro_start = $font->pos();
-      
-      $idRangeOffset = array();
-      for($i = 0; $i < $segCount; $i++) {
-        $idRangeOffset[] = $font->readUInt16();
-      }
+      $ro_start      = $font->pos();
+      $idRangeOffset = $font->r(array(self::uint16, $segCount));
       
       $glyphIndexArray = array();
       for($i = 0; $i < $segCount; $i++) {
@@ -120,22 +113,6 @@ class Font_Table_cmap extends Font_Table {
           if($gid > 0) {
             $glyphIndexArray[$c] = $gid;
           }
-          /*if($c == 0xFFFF)
-            break;
-            
-          if($ro > 0){
-            $gid = $font->readUInt16();
-            if($gid > 0) $gid += $d;
-          }
-          else
-            $gid = $c+$d;
-            
-          if($gid >= 65536)
-            $gid -= 65536;
-            
-          if($gid > 0) {
-            $glyphIndexArray[$c] = $gid;
-          }*/
         }
       }
       
@@ -149,5 +126,18 @@ class Font_Table_cmap extends Font_Table {
     }
     
     $this->data = $data;
+  }
+  
+  function _encode(){
+    $font = $this->getFont();
+    
+    $subtables = $this->data["subtables"];
+    $this->data["numberSubtables"] = count($subtables);
+    
+    $length = $font->pack(self::$header_format, $this->data);
+    
+    // etc
+    
+    return $length;
   }
 }

@@ -41,7 +41,9 @@ class Font_TrueType extends Font_Binary_Stream {
   
   private $tableOffset = 0; // Used for TTC
   
-  protected $table = array();
+  private static $raw = false;
+  
+  protected $directory = array();
   protected $data = array();
   
   static $nameIdCodes = array(
@@ -199,7 +201,7 @@ class Font_TrueType extends Font_Binary_Stream {
   
   function getTable(){
     $this->parseTableEntries();
-    return $this->table;
+    return $this->directory;
   }
   
   function setTableOffset($offset) {
@@ -209,8 +211,44 @@ class Font_TrueType extends Font_Binary_Stream {
   function parse() {
     $this->parseTableEntries();
     
-    foreach($this->table as $tag => $table) {
+    foreach($this->directory as $tag => $table) {
       $this->readTable($tag);
+    }
+  }
+  
+  function encode($tags = array()){
+    if (!self::$raw) {
+      $tags += array("head", "hhea", "cmap", "hmtx", "loca", "maxp", "name", "post", "glyf");
+    }
+    else {
+      $tags = array_keys($this->directory);
+    }
+    
+    $num_tables = count($tags);
+    $n = 16;// @todo
+    
+    Font::d("Tables : ".implode(", ", $tags));
+    
+    $entries = array();
+    foreach($tags as $tag) {
+      if (!isset($this->directory[$tag])) {
+        Font::d("  >> '$tag' table doesn't exist");
+        continue;
+      }
+      
+      $entries[$tag] = $this->directory[$tag];
+    }
+    
+    $this->header->encode();
+    
+    $directory_offset = $this->pos();
+    $offset = $directory_offset + $num_tables * $n;
+    $this->seek($offset);
+    
+    $i = 0;
+    foreach($entries as $tag => $entry) {
+      $entry->encode($directory_offset + $i * $n);
+      $i++;
     }
   }
   
@@ -228,7 +266,7 @@ class Font_TrueType extends Font_Binary_Stream {
   function parseTableEntries(){
     $this->parseHeader();
     
-    if (!empty($this->table)) {
+    if (!empty($this->directory)) {
       return;
     }
     
@@ -236,7 +274,7 @@ class Font_TrueType extends Font_Binary_Stream {
     
     for($i = 0; $i < $this->header->data["numTables"]; $i++) {
       $entry = new $class($this);
-      $this->table[$entry->tag] = $entry;
+      $this->directory[$entry->tag] = $entry;
     }
   }
   
@@ -247,19 +285,25 @@ class Font_TrueType extends Font_Binary_Stream {
   protected function readTable($tag) {
     $this->parseTableEntries();
     
-    $name_canon = preg_replace("/[^a-z0-9]/", "", strtolower($tag));
-    $class_file = dirname(__FILE__)."/font_table_$name_canon.cls.php";
-    
-    if (!isset($this->table[$tag]) || !file_exists($class_file)) {
-      return;
+    if (!self::$raw) {
+      $name_canon = preg_replace("/[^a-z0-9]/", "", strtolower($tag));
+      $class_file = dirname(__FILE__)."/font_table_$name_canon.cls.php";
+      
+      if (!isset($this->directory[$tag]) || !file_exists($class_file)) {
+        return;
+      }
+      
+      require_once $class_file;
+      $class = "Font_Table_$name_canon";
+    }
+    else {
+      $class = "Font_Table";
     }
     
-    require_once $class_file;
-    $class = "Font_Table_$name_canon";
-    $table = new $class($this->table[$tag]);
+    $table = new $class($this->directory[$tag]);
     $table->parse();
     
-    $this->data[$tag] = $table->data;
+    $this->data[$tag] = $table;
   }
   
   public function getData($name, $key = null) {
@@ -274,10 +318,10 @@ class Font_TrueType extends Font_Binary_Stream {
     }
     
     if (!$key) {
-      return $this->data[$name];
+      return $this->data[$name]->data;
     }
     else {
-      return $this->data[$name][$key];
+      return $this->data[$name]->data[$key];
     }
   }
   

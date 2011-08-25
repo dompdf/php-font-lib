@@ -27,6 +27,10 @@
 /* $Id$ */
 
 class Font {
+  /**
+   * @param string $file The font file
+   * @return Font_TrueType $file
+   */
   public static function load($file) {
     $header = file_get_contents($file, false, null, null, 4);
     $class = null;
@@ -63,5 +67,9 @@ class Font {
       
       return $obj;
     }
+  }
+  
+  static function d($str) {
+    echo "$str\n";
   }
 }

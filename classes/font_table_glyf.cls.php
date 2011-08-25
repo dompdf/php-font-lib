@@ -47,4 +47,12 @@ class Font_Table_glyf extends Font_Table {
     
     $this->data = $data;
   }
+  
+  protected function _parse(){
+    return $this->_parseRaw();
+  }
+  
+  protected function _encode(){
+    return $this->_encodeRaw();
+  }
 }

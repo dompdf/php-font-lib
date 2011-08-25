@@ -26,29 +26,31 @@
 
 /* $Id$ */
 
-class Font_Table_hmtx extends Font_Table {
-  protected function _parse(){
-    $font = $this->getFont();
-    
-    $data = array();
-    
-    $numOfLongHorMetrics = $font->getData("hhea", "numOfLongHorMetrics");
-    for($i = 0; $i < $numOfLongHorMetrics; $i++) {
-      $advanceWidth = $font->readUInt16();
-      $leftSideBearing = $font->readUInt16();
-      $data[$i] = $advanceWidth;
+class Font_Table_name_Record extends Font_Binary_Stream {
+  public $platformID;
+  public $platformSpecificID;
+  public $languageID;
+  public $nameID;
+  public $length;
+  public $offset;
+  public $string;
+  
+  public static $format = array(
+    "platformID" => self::uint16,
+    "platformSpecificID" => self::uint16,
+    "languageID" => self::uint16,
+    "nameID"     => self::uint16,
+    "length"     => self::uint16,
+    "offset"     => self::uint16,
+  );
+  
+  public function map($data) {
+    foreach($data as $key => $value) {
+      $this->$key = $value;
     }
-    
-    $numGlyphs = $font->getData("maxp", "numGlyphs");
-    if($numOfLongHorMetrics < $numGlyphs){
-      $lastWidth = end($data);
-      $data = array_pad($data, $numGlyphs, $lastWidth);
-    }
-    
-    $this->data = $data;
   }
   
-  protected function _encode() {
-    return $this->getFont()->w(array(self::uint16, count($this->data)), $this->data);
+  function __toString(){
+    return $this->string;
   }
 }

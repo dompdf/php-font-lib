@@ -37,8 +37,8 @@ class Font_WOFF_Table_Directory_Entry extends Font_Table_Directory_Entry {
     $this->checksum = $this->readUInt32();
   }
   
-  function start(){
-    parent::start();
+  function startRead(){
+    parent::startRead();
     
     if ($this->length == $this->origLength) {
       return true;
@@ -49,13 +49,7 @@ class Font_WOFF_Table_Directory_Entry extends Font_Table_Directory_Entry {
     
     $data = $font->read($this->length);
     
-    // PHP 5.1+
-    $f = @fopen("php://temp", "rb+");
-    
-    if (!$f) {
-      $f = fopen(tempnam(sys_get_temp_dir(), "fnt"), "rb+");
-    }
-    
+    $f = self::getTempFile();
     fwrite($f, gzuncompress($data));
     rewind($f);
     
@@ -63,8 +57,8 @@ class Font_WOFF_Table_Directory_Entry extends Font_Table_Directory_Entry {
     $font->f = $f;
   }
   
-  function end(){
-    parent::end();
+  function endRead(){
+    parent::endRead();
     
     $font = $this->font;
     

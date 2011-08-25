@@ -43,15 +43,78 @@ class Font_Binary_Stream {
   const longDateTime = 12;
   const char      = 13;
   
+  const modeRead      = "rb";
+  const modeWrite     = "wb";
+  const modeReadWrite = "rb+";
+
+  /**
+   * Open a font file in read mode
+   * 
+   * @param string $filename The file name of the font to open
+   */
   public function load($filename) {
-    $this->f = fopen($filename, "rb");
+    return $this->open($filename, self::modeRead);
+  }
+  
+  /**
+   * Open a font file in a chosen mode
+   * 
+   * @param string $filename The file name of the font to open
+   * @param string $mode The opening mode 
+   */
+  public function open($filename, $mode = self::modeRead) {
+    if (!in_array($mode, array(self::modeRead, self::modeWrite, self::modeReadWrite))) {
+      throw new Exception("Unkown file open mode");
+    }
+    
+    $this->f = fopen($filename, $mode);
     return $this->f != false;
   }
   
+  /**
+   * Change the internal file pointer
+   * 
+   * @param resource $fp
+   */
+  public function setFile($fp) {
+    if (!is_resource($fp)) {
+      throw new Exception('$fp is not a valid resource');
+    }
+    
+    $this->f = $fp;
+  }
+  
+  /**
+   * Create a temporary file in write mode
+   * 
+   * @return resource the temporary file pointer resource
+   */
+  public static function getTempFile() {
+      // PHP 5.1+
+    $f = @fopen("php://temp", "rb+");
+    
+    if (!$f) {
+      $f = fopen(tempnam(sys_get_temp_dir(), "fnt"), "rb+");
+    }
+    
+    return $f;
+  }
+  
+  /**
+   * Move the internal file pinter to $offset bytes
+   * 
+   * @param int $offset
+   * @return bool True if the $offset position exists in the file
+   */
   public function seek($offset) {
     return fseek($this->f, $offset, SEEK_SET) == 0;
   }
   
+  /**
+   * Gives the current position in the file
+   * 
+   * @return int The current position
+   */
   public function pos() {
     return ftell($this->f);
   }
@@ -65,9 +128,9 @@ class Font_Binary_Stream {
     return fread($this->f, $n);
   }
   
-  public function write($data) {
+  public function write($data, $length = null) {
     if ($data === null || $data === "") return;
-    return fwrite($this->f, $data);
+    return fwrite($this->f, $data, $length);
   }
 
   public function readUInt8() {
@@ -75,30 +138,34 @@ class Font_Binary_Stream {
   }
 
   public function writeUInt8($data) {
-    return $this->write(chr($data));
+    return $this->write(chr($data), 1);
   }
 
   public function readInt8() {
     $v = $this->readUInt8();
     
     if ($v >= 0x80) {
-      $v -= 256;
+      $v -= 0x100;
     }
       
     return $v;
   }
 
   public function writeInt8($data) {
-    // todo
+    if ($data < 0) {
+      $data += 0x100;
+    }
+    
+    return $this->writeUInt8($data);
   }
 
   public function readUInt16() {
-    $a = @unpack('nn', $this->read(2));
-    return $a['n'];
+    $a = unpack("nn", $this->read(2));
+    return $a["n"];
   }
 
   public function writeUInt16($data) {
-    return $this->write(pack("n", $data));
+    return $this->write(pack("n", $data), 2);
   }
 
   public function readInt16() {
@@ -120,12 +187,12 @@ class Font_Binary_Stream {
   }
 
   public function readUInt32() {
-    $a = unpack('NN', $this->read(4));
-    return $a['N'];
+    $a = unpack("NN", $this->read(4));
+    return $a["N"];
   }
 
   public function writeUInt32($data) {
-    return $this->write(pack("N", $data));
+    return $this->write(pack("N", $data), 4);
   }
 
   public function readFixed() {
@@ -137,7 +204,7 @@ class Font_Binary_Stream {
   public function writeFixed($data) {
     $left = floor($data);
     $right = ($data - $left) * 0x10000;
-    return $this->writeInt16($left) + $this->writeUInt16($left);
+    return $this->writeInt16($left) + $this->writeUInt16($right);
   }
   
   public function readLongDateTime() {
@@ -170,6 +237,12 @@ class Font_Binary_Stream {
     return $bytes;
   }
   
+  /**
+   * Read a data of type $type in the file from the current position
+   * 
+   * @param mixed $type The data type to read
+   * @return mixed The data that was read
+   */
   public function r($type) {
     switch($type) {
       case self::uint8:     return $this->readUInt8();
@@ -200,6 +273,13 @@ class Font_Binary_Stream {
     }
   }
   
+  /**
+   * Write $data of type $type in the file from the current position
+   * 
+   * @param mixed $type The data type to write
+   * @param mixed $data The data to write
+   * @return int The number of bytes read
+   */
   public function w($type, $data) {
     switch($type) {
       case self::uint8:     return $this->writeUInt8($data);
@@ -214,7 +294,7 @@ class Font_Binary_Stream {
       case self::uFWord:    return $this->writeUInt16($data);
       case self::F2Dot14:   return $this->writeInt16($data);
       case self::longDateTime: return $this->writeLongDateTime($data);
-      case self::char:      return $this->write($data);
+      case self::char:      return $this->write($data, 1);
       default: 
         if ( is_array($type) ) {
           if ($type[0] == self::char) {
@@ -230,6 +310,12 @@ class Font_Binary_Stream {
     }
   }
   
+  /**
+   * Converts a Uint32 value to string
+   * 
+   * @param int $uint32
+   * @param string The string
+   */
   public function convertUInt32ToStr($uint32) {
     return chr(($uint32 >> 24) & 0xFF).chr(($uint32 >> 16) & 0xFF).chr(($uint32 >> 8) & 0xFF).chr($uint32 & 0xFF);
   }

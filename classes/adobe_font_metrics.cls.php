@@ -64,12 +64,12 @@ class Adobe_Font_Metrics {
     $this->addPair("EncodingScheme", $encoding_scheme);
     
     $records = $font->getData("name", "records");
-    foreach($records as $id => $value) {
-      if (!isset(Font_TrueType::$nameIdCodes[$id]) || preg_match("/[\r\n]/", $value)) {
+    foreach($records as $id => $record) {
+      if (!isset(Font_TrueType::$nameIdCodes[$id]) || preg_match("/[\r\n]/", $record->string)) {
         continue;
       }
       
-      $this->addPair(Font_TrueType::$nameIdCodes[$id], $value);
+      $this->addPair(Font_TrueType::$nameIdCodes[$id], $record->string);
     }
     
     $os2 = $font->getData("OS/2");

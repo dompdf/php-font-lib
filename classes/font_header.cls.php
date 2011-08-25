@@ -39,8 +39,8 @@ abstract class Font_Header extends Font_Binary_Stream {
     $this->font = $font;
   }
   
-  protected function encode(){
-    trigger_error("Method not implemented : ".__METHOD__);
+  public function encode(){
+    return $this->font->pack($this->def, $this->data);
   }
   
   public function parse(){

@@ -28,7 +28,7 @@
 
 class Font_Table_post extends Font_Table {
   protected function _parse(){
-    $font = $this->entry->getFont();
+    $font = $this->getFont();
     
     $data = $font->unpack(array(
       "format"             => self::Fixed,

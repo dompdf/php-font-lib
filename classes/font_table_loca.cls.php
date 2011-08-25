@@ -28,7 +28,7 @@
 
 class Font_Table_loca extends Font_Table {
   protected function _parse(){
-    $font = $this->entry->getFont();
+    $font = $this->getFont();
     
     $indexToLocFormat = $font->getData("head", "indexToLocFormat");
     $numGlyphs = $font->getData("maxp", "numGlyphs");
