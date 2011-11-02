@@ -117,7 +117,7 @@ class Adobe_Font_Metrics {
           
           $this->addMetric(array(
             "C"  => ($code > 255 ? -1 : $code),
-            "WX" => $font->normalizeFUnit($hmtx[$g]),
+            "WX" => $font->normalizeFUnit($hmtx[$g][0]),
             "N"  => $name,
           ));
         }
@@ -130,7 +130,7 @@ class Adobe_Font_Metrics {
           
           $this->addMetric(array(
             "U" => $c,
-            "WX" => $font->normalizeFUnit($hmtx[$g]),
+            "WX" => $font->normalizeFUnit($hmtx[$g][0]),
             "N" => (isset($names[$g]) ? $names[$g] : sprintf("uni%04x", $c)),
             "G" => $g,
           ));

@@ -19,6 +19,8 @@ class Font_Table_loca extends Font_Table {
     $indexToLocFormat = $font->getData("head", "indexToLocFormat");
     $numGlyphs = $font->getData("maxp", "numGlyphs");
     
+    $this->entry->startRead();
+    
     $data = array();
     
     // 2 bytes
@@ -42,5 +44,31 @@ class Font_Table_loca extends Font_Table {
     }
     
     $this->data = $data;
+  }
+  
+  function _encode(){
+    $font = $this->getFont();
+    $data = $this->data;
+    
+    $indexToLocFormat = $font->getData("head", "indexToLocFormat");
+    $numGlyphs = $font->getData("maxp", "numGlyphs");
+    
+    $length = 0;
+    
+    // 2 bytes
+    if ($indexToLocFormat == 0) {
+      for ($i = 0; $i <= $numGlyphs; $i++) {
+        $length += $font->writeUInt32($data[$i] / 2);
+      }
+    }
+    
+    // 4 bytes
+    else if ($indexToLocFormat == 1) {
+      for ($i = 0; $i <= $numGlyphs; $i++) {
+        $length += $font->writeUInt32($data[$i]);
+      }
+    }
+    
+    return $length;
   }
 }

@@ -64,16 +64,18 @@ class Font_Table_name extends Font_Table {
     $this->data["count"] = $count_records;
     $this->data["stringOffset"] = 6 + $count_records * 12; // 6 => uint16 * 3, 12 => sizeof self::$record_format
     
-    $table_offset = $font->pos();
+    $tableOffset = $font->pos();
     
     $length = $font->pack(self::$header_format, $this->data);
     
-    $records_offset = $font->pos();
+    $recordsOffset = $font->pos();
     
+    $offset = 0;
     foreach($records as $record) {
       $record->length = strlen($record->string);
-      $record->offset = $font->pos() - $records_offset;
-      $length += $font->pack(self::$record_format, $record);
+      $record->offset = $offset;
+      $offset += $record->length;
+      $length += $font->pack(Font_Table_name_Record::$format, (array)$record);
     }
     
     foreach($records as $record) {

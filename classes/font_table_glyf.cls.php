@@ -13,15 +13,14 @@
  * @package php-font-lib
  */
 class Font_Table_glyf extends Font_Table {
-  protected function getGlyph($gid){
-    return;
+  protected function getGlyphData($loca, $gid){
+    $font = $this->getFont();
     
-    $indexToLocFormat = $this->getData("head", "indexToLocFormat");
-    $numGlyphs = $this->getData("maxp", "numGlyphs");
+    /*$entryStart = $this->entry->offset;
+    $start = $entryStart + $loca[$gid];
+    $font->seek($start);
     
-    $tableOffset = $this->pos();
-    
-    $data = $this->unpack(array(
+    $data = $font->unpack(array(
       "numberOfContours" => self::int16,
       "xMin" => self::FWord,
       "yMin" => self::FWord,
@@ -29,16 +28,40 @@ class Font_Table_glyf extends Font_Table {
       "yMax" => self::FWord,
     ));
     
-    $this->seek($tableOffset);
+    $data["outline"] = $font->read($loca[$gid+1] - $font->pos() - $entryStart);*/
+    
+    $font->seek($this->entry->offset + $loca[$gid]);
+    return $font->read($loca[$gid+1] - $loca[$gid]);
+  }
+  
+  protected function _parse(){
+    $font = $this->getFont();
+    $loca = $font->getData("loca");
+    $real_loca = array_slice($loca, 0, -1); // Not the last dummy loca entry
+    
+    $data = array();
+    
+    foreach($real_loca as $gid => $location) {
+      $data[$gid] = $this->getGlyphData($loca, $gid);
+    }
     
     $this->data = $data;
   }
   
-  protected function _parse(){
-    return $this->_parseRaw();
-  }
-  
   protected function _encode(){
-    return $this->_encodeRaw();
+    $font = $this->getFont();
+    $data = $this->data;
+    $loca = array();
+    $length = 0;
+    
+    foreach($data as $gid => $raw) {
+      $loca[$gid] = $length;
+      $length += $font->write($raw, strlen($raw));
+    }
+    
+    $loca[] = $length; // dummy loca
+    $font->getTableObject("loca")->data = $loca;
+    
+    return $length;
   }
 }

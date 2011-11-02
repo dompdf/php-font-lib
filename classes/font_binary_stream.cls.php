@@ -287,14 +287,14 @@ class Font_Binary_Stream {
       default: 
         if ( is_array($type) ) {
           if ($type[0] == self::char) {
-            return $this->write($type[1]);
+            return $this->write($data, $type[1]);
           }
           
           $ret = 0;
           for($i = 0; $i < $type[1]; $i++) {
             $ret += $this->w($type[0], $data[$i]);
           }
-          return 0;
+          return $ret;
         }
     }
   }

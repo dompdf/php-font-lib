@@ -13,20 +13,21 @@
  * @package php-font-lib
  */
 class Font_Table_post extends Font_Table {
+  protected $def = array(
+    "format"             => self::Fixed,
+    "italicAngle"        => self::Fixed,
+    "underlinePosition"  => self::FWord,
+    "underlineThickness" => self::FWord,
+    "isFixedPitch"       => self::uint32,
+    "minMemType42"       => self::uint32,
+    "maxMemType42"       => self::uint32,
+    "minMemType1"        => self::uint32,
+    "maxMemType1"        => self::uint32,
+  );
+  
   protected function _parse(){
     $font = $this->getFont();
-    
-    $data = $font->unpack(array(
-      "format"             => self::Fixed,
-      "italicAngle"        => self::Fixed,
-      "underlinePosition"  => self::FWord,
-      "underlineThickness" => self::FWord,
-      "isFixedPitch"       => self::uint32,
-      "minMemType42"       => self::uint32,
-      "maxMemType42"       => self::uint32,
-      "minMemType1"        => self::uint32,
-      "maxMemType1"        => self::uint32,
-    ));
+    $data = $font->unpack($this->def);
     
     $names = array();
     
@@ -43,6 +44,8 @@ class Font_Table_post extends Font_Table {
           $glyphNameIndex[] = $font->readUInt16();
         }
         
+        $data["glyphNameIndex"] = $glyphNameIndex;
+        
         $namesPascal = array();
         for($i = 0; $i < $data["numberOfGlyphs"]; $i++) {
           $len = $font->readUInt8();
@@ -57,8 +60,6 @@ class Font_Table_post extends Font_Table {
             $names[$g] = $namesPascal[$index - 258];
           }
         }
-        
-        $data["glyphNameIndex"] = $glyphNameIndex;
         
       break;
       
@@ -78,5 +79,50 @@ class Font_Table_post extends Font_Table {
     $data["names"] = $names;
     
     $this->data = $data;
+  }
+  
+  function _encode(){
+    $font = $this->getFont();
+    $data = $this->data;
+    
+    $length = $font->pack($this->def, $this->data);
+    
+    $names = $data["names"];
+    
+    switch($data["format"]) {
+      case 1:
+        // nothing to do
+      break;
+      
+      case 2:
+        $numberOfGlyphs = count($names);
+        $length += $font->writeUInt16($numberOfGlyphs);
+        
+        for($i = 0; $i < $numberOfGlyphs; $i++) {
+          $length += $font->writeUInt16($data["glyphNameIndex"][$i]);
+        }
+        
+        foreach($names as $name) {
+          $len = strlen($name);
+          $length += $font->writeUInt8($len);
+          $length += $font->write($name, $len);
+        }
+        
+      break;
+      
+      case 2.5:
+        // TODO
+      break;
+      
+      case 3:
+        // nothing
+      break;
+      
+      case 4:
+        // TODO
+      break;
+    }
+    
+    return $length;
   }
 }

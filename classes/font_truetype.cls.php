@@ -197,14 +197,18 @@ class Font_TrueType extends Font_Binary_Stream {
   function parse() {
     $this->parseTableEntries();
     
+    $this->data = array();
+    
     foreach($this->directory as $tag => $table) {
-      $this->readTable($tag);
+      if (empty($this->data[$tag])) {
+        $this->readTable($tag);
+      }
     }
   }
   
   function encode($tags = array()){
     if (!self::$raw) {
-      $tags += array("head", "hhea", "cmap", "hmtx", "loca", "maxp", "name", "post", "glyf");
+      $tags = array_merge(array("head", "hhea", "cmap", "hmtx", "maxp", "glyf", "loca", "name", "post"), $tags);
     }
     else {
       $tags = array_keys($this->directory);
@@ -225,6 +229,7 @@ class Font_TrueType extends Font_Binary_Stream {
       $entries[$tag] = $this->directory[$tag];
     }
     
+    $this->header->data["numTables"] = $num_tables;
     $this->header->encode();
     
     $directory_offset = $this->pos();
@@ -290,6 +295,10 @@ class Font_TrueType extends Font_Binary_Stream {
     $table->parse();
     
     $this->data[$tag] = $table;
+  }
+  
+  public function getTableObject($name) {
+    return $this->data[$name];
   }
   
   public function getData($name, $key = null) {

@@ -22,7 +22,7 @@ class Font_Table_hmtx extends Font_Table {
     for($i = 0; $i < $numOfLongHorMetrics; $i++) {
       $advanceWidth = $font->readUInt16();
       $leftSideBearing = $font->readUInt16();
-      $data[$i] = $advanceWidth;
+      $data[$i] = array($advanceWidth, $leftSideBearing);
     }
     
     $numGlyphs = $font->getData("maxp", "numGlyphs");
@@ -35,6 +35,16 @@ class Font_Table_hmtx extends Font_Table {
   }
   
   protected function _encode() {
-    return $this->getFont()->w(array(self::uint16, count($this->data)), $this->data);
+    $font = $this->getFont();
+    $numOfLongHorMetrics = $font->getData("hhea", "numOfLongHorMetrics");
+    
+    $data = $this->data;
+    $length = 0;
+    for($i = 0; $i < $numOfLongHorMetrics; $i++) {
+      $length += $font->writeUInt16($data[$i][0]);
+      $length += $font->writeUInt16($data[$i][1]);
+    }
+    
+    return $length;
   }
 }
