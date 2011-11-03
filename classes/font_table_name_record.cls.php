@@ -36,6 +36,14 @@ class Font_Table_name_Record extends Font_Binary_Stream {
     }
   }
   
+  public function getUTF8() {
+    return $this->string;
+  }
+  
+  public function getUTF16() {
+    return Font::UTF8ToUTF16($this->string);
+  }
+  
   function __toString(){
     return $this->string;
   }

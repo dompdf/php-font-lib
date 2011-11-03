@@ -42,6 +42,10 @@ class Font_Table extends Font_Binary_Stream {
     return $this->getFont()->pack($this->def, $this->data);
   }
   
+  public function removeGlyph($gid) {
+    // @todo
+  }
+  
   protected function _parse(){
     $this->data = $this->getFont()->unpack($this->def);
   }

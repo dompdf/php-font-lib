@@ -55,6 +55,7 @@ class Font_Table_cmap extends Font_Table {
       // @todo Only CMAP version 4
       if($subtable["format"] != 4) {
         unset($data["subtables"][$i]);
+        $data["numberSubtables"]--;
         continue;
       }
       
@@ -118,11 +119,36 @@ class Font_Table_cmap extends Font_Table {
     $font = $this->getFont();
     
     $subtables = $this->data["subtables"];
-    $this->data["numberSubtables"] = count($subtables);
+    $numberSubtables = count($subtables);
+    $this->data["numberSubtables"] = $numberSubtables;
     
     $length = $font->pack(self::$header_format, $this->data);
     
-    // etc
+    $subtable_headers_size = $numberSubtables * 8; // size of self::$subtable_header_format
+    $subtable_headers_offset = $font->pos();
+    
+    $length += $font->write(str_repeat("\0", $subtable_headers_size), $subtable_headers_size);
+    
+    // write subtables data
+    foreach($subtables as $i => $subtable) {
+      $subtables[$i]["offset"] = $length;
+      
+      $length += $font->writeUInt16($subtable["format"]);
+      $length += $font->pack(self::$subtable_v4_format, $subtable);
+      
+      $segCount = $subtable["segCount"];
+      $length += $font->w(array(self::uint16, $segCount), $subtable["endCode"]);
+      $length += $font->writeUInt16(0); // reservedPad
+      $length += $font->w(array(self::uint16, $segCount), $subtable["startCode"]);
+      $length += $font->w(array(self::uint16, $segCount), $subtable["idDelta"]);
+      $length += $font->w(array(self::uint16, $segCount), $subtable["idRangeOffset"]);
+    }
+    
+    // write subtables headers
+    $font->seek($subtable_headers_offset);
+    foreach($subtables as $subtable) {
+      $font->pack(self::$subtable_header_format, $subtable);
+    }
     
     return $length;
   }

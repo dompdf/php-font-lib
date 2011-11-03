@@ -98,10 +98,11 @@ class Font_Table_post extends Font_Table {
         $numberOfGlyphs = count($names);
         $length += $font->writeUInt16($numberOfGlyphs);
         
-        for($i = 0; $i < $numberOfGlyphs; $i++) {
-          $length += $font->writeUInt16($data["glyphNameIndex"][$i]);
+        foreach($data["glyphNameIndex"] as $gni) {
+          $length += $font->writeUInt16($gni);
         }
         
+        $names = array_slice($names, 257);
         foreach($names as $name) {
           $len = strlen($name);
           $length += $font->writeUInt8($len);

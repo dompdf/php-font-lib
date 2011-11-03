@@ -58,4 +58,12 @@ class Font {
   static function d($str) {
     echo "$str\n";
   }
+  
+  static function UTF16ToUTF8($str) {
+    return mb_convert_encoding($str, "utf-8", "utf-16");
+  }
+  
+  static function UTF8ToUTF16($str) {
+    return mb_convert_encoding($str, "utf-16", "utf-8");
+  }
 }

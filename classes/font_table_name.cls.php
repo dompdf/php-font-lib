@@ -42,11 +42,7 @@ class Font_Table_name extends Font_Table {
     foreach($records as $record) {
       $font->seek($tableOffset + $data["stringOffset"] + $record->offset);
       $s = $font->read($record->length);
-      
-      $s = str_replace(chr(0), '', $s);
-      //$s = preg_replace('|[ \[\](){}<>/%]|', '', $s);
-      
-      $record->string = $s;
+      $record->string = Font::UTF16ToUTF8($s);
       $names[$record->nameID] = $record;
     }
     
@@ -72,14 +68,15 @@ class Font_Table_name extends Font_Table {
     
     $offset = 0;
     foreach($records as $record) {
-      $record->length = strlen($record->string);
+      $record->length = mb_strlen($record->getUTF16(), "8bit");
       $record->offset = $offset;
       $offset += $record->length;
       $length += $font->pack(Font_Table_name_Record::$format, (array)$record);
     }
     
     foreach($records as $record) {
-      $length += $font->write($record->string, strlen($record->string));
+      $str = $record->getUTF16();
+      $length += $font->write($str, mb_strlen($str, "8bit"));
     }
     
     return $length;
