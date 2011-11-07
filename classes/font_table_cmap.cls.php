@@ -68,7 +68,7 @@ class Font_Table_cmap extends Font_Table {
       $font->readUInt16(); // reservedPad
       
       $startCode     = $font->r(array(self::uint16, $segCount));
-      $idDelta       = $font->r(array(self::uint16, $segCount));
+      $idDelta       = $font->r(array(self::int16, $segCount));
       
       $ro_start      = $font->pos();
       $idRangeOffset = $font->r(array(self::uint16, $segCount));
@@ -117,6 +117,136 @@ class Font_Table_cmap extends Font_Table {
   
   function _encode(){
     $font = $this->getFont();
+    $subset = $font->getSubset();
+    
+    // Sort by char code
+    ksort($subset);
+    
+    $prevCode = 0;
+    $segments = array(/*array(array(0, 0))*/);
+    $i = -1;
+    $j = 0;
+    foreach($subset as $code => $gid) {
+      if ($prevCode + 1 != $code) {
+        $i++;
+        $segments[$i] = array(array($code, $j));
+      }
+      else {
+        $segments[$i][] = array($code, $j);
+      }
+      
+      $j++;
+      $prevCode = $code;
+    }
+    
+    $segments[][] = array(0xFFFF, 0xFFFF);
+    
+    var_dump($segments);
+    
+    $startCode = array();
+    $endCode = array();
+    $idDelta = array();
+    
+    foreach($segments as $i => $codes){
+      $start = reset($codes);
+      $end = end($codes);
+      
+      $startCode[] = $start[0];
+      $endCode[]   = $end[0];
+      $idDelta[]   = $start[1] - $start[0] - 1;
+    }
+    
+    //array_unshift($startCode, 0);
+    //array_pop($startCode);
+    
+    $segCount = count($startCode);
+    $idRangeOffset = array_fill(0, $segCount, 0); 
+    
+    $searchRange = 1;
+    $entrySelector = 0;
+    while ($searchRange * 2 <= $segCount) {
+      $searchRange *= 2;
+      $entrySelector++;
+    }
+    $searchRange *= 2;
+    $rangeShift = $segCount * 2 - $searchRange;
+    
+    $subtables = array(
+      array(
+        // header
+        "platformID"         => 3, // Unicode
+        "platformSpecificID" => 1,
+        "offset"        => null,
+      
+        // subtable
+        "format"        => 4, 
+        "length"        => null, 
+        "language"      => 0, 
+        "segCount"      => $segCount, 
+        "segCountX2"    => $segCount * 2, 
+        "searchRange"   => $searchRange, 
+        "entrySelector" => $entrySelector, 
+        "rangeShift"    => $rangeShift,
+        "startCode"     => $startCode,
+        "endCode"       => $endCode,
+        "idDelta"       => $idDelta,
+        "idRangeOffset" => $idRangeOffset, 
+      )
+    );
+    
+    $data = array(
+      "version"         => 0,
+      "numberSubtables" => count($subtables),
+      "subtables"       => $subtables,
+    );
+    
+    var_dump($subtables);
+    
+    $length = $font->pack(self::$header_format, $data);
+    
+    $subtable_headers_size = $data["numberSubtables"] * 8; // size of self::$subtable_header_format
+    $subtable_headers_offset = $font->pos();
+    
+    $length += $font->write(str_repeat("\0", $subtable_headers_size), $subtable_headers_size);
+    
+    // write subtables data
+    foreach($data["subtables"] as $i => $subtable) {
+      $length_before = $length;
+      $data["subtables"][$i]["offset"] = $length;
+      
+      $length += $font->writeUInt16($subtable["format"]);
+      
+      $before_subheader = $font->pos();
+      $length += $font->pack(self::$subtable_v4_format, $subtable);
+      
+      $segCount = $subtable["segCount"];
+      $length += $font->w(array(self::uint16, $segCount), $subtable["endCode"]);
+      $length += $font->writeUInt16(0); // reservedPad
+      $length += $font->w(array(self::uint16, $segCount), $subtable["startCode"]);
+      $length += $font->w(array(self::uint16, $segCount), $subtable["idDelta"]);
+      $length += $font->w(array(self::uint16, $segCount), $subtable["idRangeOffset"]);
+      
+      $after_subtable = $font->pos();
+      
+      $subtable["length"] = $length - $length_before;
+      $font->seek($before_subheader);
+      $length += $font->pack(self::$subtable_v4_format, $subtable);
+      
+      $font->seek($after_subtable);
+    }
+    
+    // write subtables headers
+    $font->seek($subtable_headers_offset);
+    foreach($data["subtables"] as $subtable) {
+      $font->pack(self::$subtable_header_format, $subtable);
+    }
+    
+    return $length;
+  }
+  
+  /*
+  function _encode(){
+    $font = $this->getFont();
     
     $subtables = $this->data["subtables"];
     $numberSubtables = count($subtables);
@@ -151,5 +281,5 @@ class Font_Table_cmap extends Font_Table {
     }
     
     return $length;
-  }
+  }*/
 }

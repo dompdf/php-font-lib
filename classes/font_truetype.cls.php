@@ -32,6 +32,9 @@ class Font_TrueType extends Font_Binary_Stream {
   protected $directory = array();
   protected $data = array();
   
+  protected $glyph_subset = array();
+  protected $glyph_all = array();
+  
   static $nameIdCodes = array(
     0  => "Copyright",
     1  => "FontName",
@@ -206,6 +209,37 @@ class Font_TrueType extends Font_Binary_Stream {
     }
   }
   
+  function setSubset($unicode_chars) {
+    $subtable = null;
+    foreach($this->getData("cmap", "subtables") as $_subtable) {
+      if ($_subtable["platformID"] == 0 || $_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1) {
+        $subtable = $_subtable;
+        break;
+      }
+    }
+    
+    if (!$subtable) return;
+    
+    $gids = array();
+    
+    foreach($unicode_chars as $char) {
+      $entity = mb_encode_numericentity($char, array(0x0, 0xffff, 0, 0xffff), "utf-8");
+      $code = (int)preg_replace('`^&#([0-9]+);.*$`', '\\1', $entity);
+      $gids[$code] = $subtable["glyphIndexArray"][$code];
+    }
+    
+    $this->glyph_subset = $gids;
+    $this->glyph_all = $subtable["glyphIndexArray"][$code];
+  }
+  
+  function getSubset() {
+    if (empty($this->glyph_subset)) {
+      return $this->glyph_all;
+    }
+    
+    return $this->glyph_subset;
+  }
+  
   function encode($tags = array()){
     if (!self::$raw) {
       $tags = array_merge(array("head", "hhea", "cmap", "hmtx", "maxp", "glyf", "loca", "name", "post"), $tags);
@@ -323,5 +357,13 @@ class Font_TrueType extends Font_Binary_Stream {
   function saveAdobeFontMetrics($file, $encoding = null) {
     $afm = new Adobe_Font_Metrics($this);
     $afm->write($file, $encoding);
+  }
+  
+  function reduce(){
+    $names_to_keep = array(0, 1, 2, 3, 4, 5, 6);
+    foreach($this->data["name"]->data["records"] as $id => $rec) {
+      if (in_array($id, $names_to_keep)) continue;
+      unset($this->data["name"]->data["records"][$id]);
+    }
   }
 }

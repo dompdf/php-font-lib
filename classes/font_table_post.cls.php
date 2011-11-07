@@ -84,9 +84,12 @@ class Font_Table_post extends Font_Table {
   function _encode(){
     $font = $this->getFont();
     $data = $this->data;
+    $data["format"] = 1;
     
-    $length = $font->pack($this->def, $this->data);
+    $length = $font->pack($this->def, $data);
+    return $length;
     
+    /*
     $names = $data["names"];
     
     switch($data["format"]) {
@@ -124,6 +127,6 @@ class Font_Table_post extends Font_Table {
       break;
     }
     
-    return $length;
+    return $length;*/
   }
 }

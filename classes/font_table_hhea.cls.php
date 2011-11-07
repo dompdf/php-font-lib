@@ -32,4 +32,11 @@ class Font_Table_hhea extends Font_Table {
     "metricDataFormat"    => self::int16,
     "numOfLongHorMetrics" => self::uint16,
   );
+  
+  function _encode(){
+    $font = $this->getFont();
+    $this->data["numOfLongHorMetrics"] = count($font->getSubset());
+    
+    return parent::_encode();
+  }
 }

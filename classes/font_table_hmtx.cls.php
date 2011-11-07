@@ -19,10 +19,10 @@ class Font_Table_hmtx extends Font_Table {
     $data = array();
     
     $numOfLongHorMetrics = $font->getData("hhea", "numOfLongHorMetrics");
-    for($i = 0; $i < $numOfLongHorMetrics; $i++) {
+    for($gid = 0; $gid < $numOfLongHorMetrics; $gid++) {
       $advanceWidth = $font->readUInt16();
       $leftSideBearing = $font->readUInt16();
-      $data[$i] = array($advanceWidth, $leftSideBearing);
+      $data[$gid] = array($advanceWidth, $leftSideBearing);
     }
     
     $numGlyphs = $font->getData("maxp", "numGlyphs");
@@ -34,15 +34,29 @@ class Font_Table_hmtx extends Font_Table {
     $this->data = $data;
   }
   
-  protected function _encode() {
+  /*protected function _encode() {
     $font = $this->getFont();
     $numOfLongHorMetrics = $font->getData("hhea", "numOfLongHorMetrics");
     
     $data = $this->data;
     $length = 0;
-    for($i = 0; $i < $numOfLongHorMetrics; $i++) {
-      $length += $font->writeUInt16($data[$i][0]);
-      $length += $font->writeUInt16($data[$i][1]);
+    for($gid = 0; $gid < $numOfLongHorMetrics; $gid++) {
+      $length += $font->writeUInt16($data[$gid][0]);
+      $length += $font->writeUInt16($data[$gid][1]);
+    }
+    
+    return $length;
+  }*/
+  
+  protected function _encode() {
+    $font = $this->getFont();
+    $subset = $font->getSubset();
+    $data = $this->data;
+    
+    $length = 0;
+    foreach($subset as $code => $gid) {
+      $length += $font->writeUInt16($data[$gid][0]);
+      $length += $font->writeUInt16($data[$gid][1]);
     }
     
     return $length;
