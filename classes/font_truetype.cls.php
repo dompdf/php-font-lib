@@ -228,8 +228,10 @@ class Font_TrueType extends Font_Binary_Stream {
       $gids[$code] = $subtable["glyphIndexArray"][$code];
     }
     
+    ksort($gids);
+    
     $this->glyph_subset = $gids;
-    $this->glyph_all = $subtable["glyphIndexArray"][$code];
+    $this->glyph_all = $subtable["glyphIndexArray"];
   }
   
   function getSubset() {
@@ -278,10 +280,10 @@ class Font_TrueType extends Font_Binary_Stream {
   }
   
   function parseHeader(){
-		if (!empty($this->header)) {
+    if (!empty($this->header)) {
       return;
-		}
-		
+    }
+    
     $this->seek($this->tableOffset);
     
     $this->header = new Font_TrueType_Header($this);

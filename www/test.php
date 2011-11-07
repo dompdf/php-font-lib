@@ -51,17 +51,20 @@ foreach($values as $value) {
 
 // font RW
 $filename = "../fonts/DejaVuSans.ttf";
+$filename_out = "$filename.2.ttf";
+
 $font = Font::load($filename);
 $font->parse();
 
-$font->setSubset(array("a", "b", "c", "d", "A", utf8_encode("é")));
+$font->setSubset(array("a", "b", " ", "B", "c", "m", "A", "P", "?"));
 $font->reduce();
 
-$font->open("$filename.2.ttf", Font_Binary_Stream::modeWrite);
+$font->open($filename_out, Font_Binary_Stream::modeWrite);
 $font->encode(array("OS/2"));
 
 ?>
 
+File size: <?php echo number_format(filesize($filename_out), 0, ".", " "); ?> bytes
 Memory: <?php echo (memory_get_peak_usage(true) / 1024); ?>KB
 Time: <?php echo round(microtime(true) - $t, 4); ?>s
 </pre>

@@ -71,8 +71,8 @@ class Font_Table_Directory_Entry extends Font_Binary_Stream {
   }
   
   function encode($entry_offset){
-    Font::d("\n==== '$this->tag' ====");
-    Font::d("Entry offset  = $entry_offset");
+    Font::d("\n==== $this->tag ====");
+    //Font::d("Entry offset  = $entry_offset");
     
     $data = $this->font_table;
     $font = $this->font;

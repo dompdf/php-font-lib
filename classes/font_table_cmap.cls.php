@@ -119,29 +119,26 @@ class Font_Table_cmap extends Font_Table {
     $font = $this->getFont();
     $subset = $font->getSubset();
     
-    // Sort by char code
-    ksort($subset);
-    
     $prevCode = 0;
-    $segments = array(/*array(array(0, 0))*/);
+    $segments = array();
+    $glyphIndexArray = array();
+    
     $i = -1;
     $j = 0;
     foreach($subset as $code => $gid) {
       if ($prevCode + 1 != $code) {
         $i++;
-        $segments[$i] = array(array($code, $j));
-      }
-      else {
-        $segments[$i][] = array($code, $j);
+        $segments[$i] = array();
       }
       
+      $segments[$i][] = array($code, $j);
+      
+      $glyphIndexArray[] = $code;
       $j++;
       $prevCode = $code;
     }
     
     $segments[][] = array(0xFFFF, 0xFFFF);
-    
-    var_dump($segments);
     
     $startCode = array();
     $endCode = array();
@@ -149,18 +146,15 @@ class Font_Table_cmap extends Font_Table {
     
     foreach($segments as $i => $codes){
       $start = reset($codes);
-      $end = end($codes);
+      $end   = end($codes);
       
       $startCode[] = $start[0];
       $endCode[]   = $end[0];
-      $idDelta[]   = $start[1] - $start[0] - 1;
+      $idDelta[]   = $start[1] - $start[0] + 1;
     }
     
-    //array_unshift($startCode, 0);
-    //array_pop($startCode);
-    
     $segCount = count($startCode);
-    $idRangeOffset = array_fill(0, $segCount, 0); 
+    $idRangeOffset = array_fill(0, $segCount, 0);
     
     $searchRange = 1;
     $entrySelector = 0;
@@ -191,6 +185,7 @@ class Font_Table_cmap extends Font_Table {
         "endCode"       => $endCode,
         "idDelta"       => $idDelta,
         "idRangeOffset" => $idRangeOffset, 
+        "glyphIndexArray" => $glyphIndexArray, 
       )
     );
     
@@ -199,8 +194,6 @@ class Font_Table_cmap extends Font_Table {
       "numberSubtables" => count($subtables),
       "subtables"       => $subtables,
     );
-    
-    var_dump($subtables);
     
     $length = $font->pack(self::$header_format, $data);
     
@@ -225,6 +218,7 @@ class Font_Table_cmap extends Font_Table {
       $length += $font->w(array(self::uint16, $segCount), $subtable["startCode"]);
       $length += $font->w(array(self::uint16, $segCount), $subtable["idDelta"]);
       $length += $font->w(array(self::uint16, $segCount), $subtable["idRangeOffset"]);
+      $length += $font->w(array(self::uint16, $segCount), $subtable["glyphIndexArray"]);
       
       $after_subtable = $font->pos();
       
