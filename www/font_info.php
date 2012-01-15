@@ -43,7 +43,15 @@ if ($font instanceof Font_TrueType_Collection) {
 
 if ($unicodemap) {
   ?>
-
+<style type="text/css">
+@font-face {
+  font-family: unicode-map; 
+  font-weight: normal;
+  font-style: normal;
+  font-variant: normal;
+  src: url('<?php echo $fontfile; ?>'); 
+}
+</style>
 <div class="unicode-map">
   <?php 
         
@@ -60,7 +68,7 @@ if ($unicodemap) {
 	
   for($c = 0; $c <= 0xFFFF; $c++) { 
     if (($c % 256 == 0 || $c == 0xFFFF) && $empty > 0) {
-      echo "<b style=\"width:".($empty*2)."px\"></b>";
+      echo "<b style=\"width:".($empty*3)."px\"></b>";
       $empty = 0;
     }
     
@@ -68,7 +76,7 @@ if ($unicodemap) {
     	$g = $subtable["glyphIndexArray"][$c];
 			
       if ($empty > 0) {
-        echo "<b style=\"width:".($empty*2)."px\"></b>";
+        echo "<b style=\"width:".($empty*3)."px\"></b>";
         $empty = 0;
       }
       echo "<i><s>&#$c;<br /><div class=\"info\">$c<br />".(isset($names[$g]) ? $names[$g] : sprintf("uni%04x", $c))."</div></s></i>";

@@ -56,7 +56,7 @@ $filename_out = "$filename.2.ttf";
 $font = Font::load($filename);
 $font->parse();
 
-$font->setSubset(array("a", "b", " ", "B", "c", "m", "A", "P", "?"));
+$font->setSubset(array("a", "b", " ", "B", "c", "m", "A", "P", "?", utf8_encode("é")));
 $font->reduce();
 
 $font->open($filename_out, Font_Binary_Stream::modeWrite);

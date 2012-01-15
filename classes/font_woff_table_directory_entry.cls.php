@@ -22,37 +22,4 @@ class Font_WOFF_Table_Directory_Entry extends Font_Table_Directory_Entry {
     $this->origLength = $this->readUInt32();
     $this->checksum = $this->readUInt32();
   }
-  
-  function startRead(){
-    parent::startRead();
-    
-    if ($this->length == $this->origLength) {
-      return true;
-    }
-    
-    $font = $this->font;
-    $font->fileOffset = $font->pos();
-    
-    $data = $font->read($this->length);
-    
-    $f = self::getTempFile();
-    fwrite($f, gzuncompress($data));
-    rewind($f);
-    
-    $font->origF = $font->f;
-    $font->f = $f;
-  }
-  
-  function endRead(){
-    parent::endRead();
-    
-    $font = $this->font;
-    
-    if ($font->origF) {
-      fclose($font->f);
-      $font->f = $font->origF;
-      $font->origF = null;
-      $font->fileOffset = 0;
-    }
-  }
 }

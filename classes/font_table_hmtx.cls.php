@@ -15,17 +15,20 @@
 class Font_Table_hmtx extends Font_Table {
   protected function _parse(){
     $font = $this->getFont();
-    
-    $data = array();
+    $offset = $font->pos();
     
     $numOfLongHorMetrics = $font->getData("hhea", "numOfLongHorMetrics");
+    $numGlyphs = $font->getData("maxp", "numGlyphs");
+    
+    $font->seek($offset);
+    
+    $data = array();
     for($gid = 0; $gid < $numOfLongHorMetrics; $gid++) {
       $advanceWidth = $font->readUInt16();
       $leftSideBearing = $font->readUInt16();
       $data[$gid] = array($advanceWidth, $leftSideBearing);
     }
     
-    $numGlyphs = $font->getData("maxp", "numGlyphs");
     if($numOfLongHorMetrics < $numGlyphs){
       $lastWidth = end($data);
       $data = array_pad($data, $numGlyphs, $lastWidth);
