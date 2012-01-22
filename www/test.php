@@ -56,7 +56,8 @@ $filename_out = "$filename.2.ttf";
 $font = Font::load($filename);
 $font->parse();
 
-$font->setSubset(array("a", "b", " ", "B", "c", "m", "A", "P", "?", utf8_encode("י")));
+
+$font->setSubset(utf8_encode("I am a test string with unicode chars יאש~@` and number 12496"));
 $font->reduce();
 
 $font->open($filename_out, Font_Binary_Stream::modeWrite);

@@ -119,7 +119,6 @@ class Font_Table_cmap extends Font_Table {
     $subset = $font->getSubset();
     
     $segments = array();
-    //$segments[][] = array(0, 0);
     
     $i = count($segments)-1;
     $j = $i+1;
@@ -145,13 +144,13 @@ class Font_Table_cmap extends Font_Table {
     $endCode = array();
     $idDelta = array();
     
-    foreach($segments as $i => $codes){
+    foreach($segments as $codes){
       $start = reset($codes);
       $end   = end($codes);
       
       $startCode[] = $start[0];
       $endCode[]   = $end[0];
-      $idDelta[]   = $start[1] - $start[0] + 1;
+      $idDelta[]   = $start[1] - $start[0];
     }
     
     $segCount = count($startCode);
@@ -238,43 +237,4 @@ class Font_Table_cmap extends Font_Table {
     
     return $length;
   }
-  
-  /*
-  function _encode(){
-    $font = $this->getFont();
-    
-    $subtables = $this->data["subtables"];
-    $numberSubtables = count($subtables);
-    $this->data["numberSubtables"] = $numberSubtables;
-    
-    $length = $font->pack(self::$header_format, $this->data);
-    
-    $subtable_headers_size = $numberSubtables * 8; // size of self::$subtable_header_format
-    $subtable_headers_offset = $font->pos();
-    
-    $length += $font->write(str_repeat("\0", $subtable_headers_size), $subtable_headers_size);
-    
-    // write subtables data
-    foreach($subtables as $i => $subtable) {
-      $subtables[$i]["offset"] = $length;
-      
-      $length += $font->writeUInt16($subtable["format"]);
-      $length += $font->pack(self::$subtable_v4_format, $subtable);
-      
-      $segCount = $subtable["segCount"];
-      $length += $font->w(array(self::uint16, $segCount), $subtable["endCode"]);
-      $length += $font->writeUInt16(0); // reservedPad
-      $length += $font->w(array(self::uint16, $segCount), $subtable["startCode"]);
-      $length += $font->w(array(self::uint16, $segCount), $subtable["idDelta"]);
-      $length += $font->w(array(self::uint16, $segCount), $subtable["idRangeOffset"]);
-    }
-    
-    // write subtables headers
-    $font->seek($subtable_headers_offset);
-    foreach($subtables as $subtable) {
-      $font->pack(self::$subtable_header_format, $subtable);
-    }
-    
-    return $length;
-  }*/
 }

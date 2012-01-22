@@ -34,6 +34,7 @@ class Font_TrueType extends Font_Binary_Stream {
   
   protected $glyph_subset = array();
   protected $glyph_all = array();
+  public $compound_glyph_offsets = array();
   
   static $nameIdCodes = array(
     0  => "Copyright",
@@ -209,7 +210,92 @@ class Font_TrueType extends Font_Binary_Stream {
     }
   }
   
-  function setSubset($unicode_chars) {
+  function utf8toUnicode($str) {
+    $len = strlen($str);
+
+    for ($i = 0; $i < $len; $i++) {
+      $uni = -1;
+      $h = ord($str[$i]);
+      
+      if ( $h <= 0x7F ) {
+        $uni = $h;
+      }
+      elseif ( $h >= 0xC2 ) {
+        if ( ($h <= 0xDF) && ($i < $len -1) )
+          $uni = ($h & 0x1F) << 6 | (ord($str[++$i]) & 0x3F);
+        elseif ( ($h <= 0xEF) && ($i < $len -2) )
+          $uni = ($h & 0x0F) << 12 | (ord($str[++$i]) & 0x3F) << 6 | (ord($str[++$i]) & 0x3F);
+        elseif ( ($h <= 0xF4) && ($i < $len -3) )
+          $uni = ($h & 0x0F) << 18 | (ord($str[++$i]) & 0x3F) << 12 | (ord($str[++$i]) & 0x3F) << 6 | (ord($str[++$i]) & 0x3F);
+      }
+      
+      if ($uni >= 0) {
+        $out[] = $uni;
+      }
+    }
+    
+    return $out;
+  }
+  
+  function lookupGlyph($gid, &$gids, &$newGlyphOffsets, $glyfOffset, $indexToLoc, $gidToCid) {
+    $this->seek($glyfOffset + $indexToLoc[$gid]);
+    
+    $numberOfContours = $this->readInt16();
+    
+    if ($numberOfContours < 0) {
+      $this->skip(8);
+      $compoundOffset = 10; // 2 + 8
+      
+      do {
+        $flags      = $this->readUInt16();
+        $compoundOffset += 2;
+        
+        $glyphIndex = $this->readUInt16();
+        $newGlyphOffsets[$compoundOffset] = $glyphIndex;
+        
+        $compoundOffset += 2;
+        
+        if (!in_array($glyphIndex, $gids) && isset($indexToLoc[$glyphIndex])) {
+          $code = $gidToCid[$glyphIndex];
+          $gids[$code] = $glyphIndex;
+        }
+        
+        $pos = $this->pos();
+        $this->lookupGlyph($glyphIndex, $gids, $newGids, $glyfOffset, $indexToLoc, $gidToCid);
+        $this->seek($pos);
+        
+        $offset = 0;
+        
+        // skip some bytes by case
+        if ($flags & Font_Table_glyf::ARG_1_AND_2_ARE_WORDS) {
+          $offset += 4;
+        }
+        else {
+          $offset += 2;
+        }
+        
+        if ($flags & Font_Table_glyf::WE_HAVE_A_SCALE) {
+          $offset += 2;
+        }
+        elseif ($flags & Font_Table_glyf::WE_HAVE_AN_X_AND_Y_SCALE) {
+          $offset += 4;
+        }
+        elseif ($flags & Font_Table_glyf::WE_HAVE_A_TWO_BY_TWO) {
+          $offset += 8;
+        }
+        
+        $this->skip($offset);
+        $compoundOffset += $offset;
+        
+      } while ($flags & Font_Table_glyf::MORE_COMPONENTS);
+    }
+  }
+  
+  function setSubset($subset) {
+    if ( is_array($subset) ) {
+      $subset = implode("", $subset);
+    }
+    
     $subtable = null;
     foreach($this->getData("cmap", "subtables") as $_subtable) {
       if ($_subtable["platformID"] == 0 || $_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1) {
@@ -222,66 +308,36 @@ class Font_TrueType extends Font_Binary_Stream {
     
     $gids = array();
     
-    foreach($unicode_chars as $char) {
-      $entity = mb_encode_numericentity($char, array(0x0, 0xffff, 0, 0xffff), "utf-8");
-      $code = (int)preg_replace('`^&#([0-9]+);.*$`', '\\1', $entity);
+    $chars = $this->utf8toUnicode($subset);
+    foreach($chars as $code) {
       $gids[$code] = $subtable["glyphIndexArray"][$code];
     }
     
     // add compound glyphs
     $indexToLoc = $this->getData("loca");
     $glyfOffset = $this->directory["glyf"]->offset;
-    $gidToCid   = array_flip($subtable["glyphIndexArray"]);
-
+    $cidToGid   = $subtable["glyphIndexArray"];
+    $gidToCid   = array_flip($cidToGid);
+    $newGlyphOffsets = array();
+    
     foreach($gids as $code => $gid) {
-      var_dump("GID $gid CODE $code");
+      $_newGlyphOffsets = array();
+      $this->lookupGlyph($gid, $gids, $_newGlyphOffsets, $glyfOffset, $indexToLoc, $gidToCid);
       
-      $this->seek($glyfOffset + $indexToLoc[$gid]);
-      
-      $numberOfContours = $this->readInt16();
-      
-      if ($numberOfContours < 0) {
-        $this->skip(8);
-        
-        do {
-          $flags      = $this->readUInt16();
-          $glyphIndex = $this->readUInt16();
-          
-          if (!in_array($glyphIndex, $gids) && isset($indexToLoc[$glyphIndex])) {
-            $code = $gidToCid[$glyphIndex];
-            $gids[$code] = $glyphIndex;
-          }
-          
-          $offset = 0;
-          
-          // skip some bytes by case
-          if ($flags & Font_Table_glyf::ARGS_ARE_XY_VALUES) {
-            $offset += 4;
-          }
-          else {
-            $offset += 2;
-          }
-          
-          if ($flags & Font_Table_glyf::WE_HAVE_A_SCALE) {
-            $offset += 2;
-          }
-          elseif ($flags & Font_Table_glyf::WE_HAVE_AN_X_AND_Y_SCALE) {
-            $offset += 4;
-          }
-          elseif ($flags & Font_Table_glyf::WE_HAVE_A_TWO_BY_TWO) {
-            $offset += 8;
-          }
-          
-          $this->skip($offset);
-          
-        } while ($flags & Font_Table_glyf::MORE_COMPONENTS);
+      if (count($_newGlyphOffsets)) {
+        $newGlyphOffsets[$gid] = $_newGlyphOffsets;
       }
     }
     
-    var_dump($gids);
-    
     ksort($gids);
     
+    foreach($newGlyphOffsets as $_gid => $compoundOffsets) {
+      foreach($compoundOffsets as $offset => $gid) {
+        $newGlyphOffsets[$_gid][$offset] = array_search($gid, array_values($gids));
+      }
+    }
+    
+    $this->compound_glyph_offsets = $newGlyphOffsets;
     $this->glyph_subset = $gids;
     $this->glyph_all = $subtable["glyphIndexArray"];
   }

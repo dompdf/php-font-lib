@@ -97,6 +97,7 @@ else {
   $records = $font->getData("name", "records");
   ?>
 <span style="float: right;">
+  File size: <?php echo round(filesize($fontfile) / 1024, 3); ?>KB &mdash;
   Memory: <?php echo (memory_get_peak_usage(true) / 1024); ?>KB &mdash;
   Time: <?php echo round(microtime(true) - $t, 4); ?>s
 </span>

@@ -103,7 +103,7 @@ class Font_Table_post extends Font_Table {
         $glyphNameIndex = range(0, count($subset));
         
         $names = array();
-        foreach($subset as $code => $gid) {
+        foreach($subset as $gid) {
           $names[] = $data["names"][$data["glyphNameIndex"][$gid]];
         }
     

@@ -37,27 +37,14 @@ class Font_Table_hmtx extends Font_Table {
     $this->data = $data;
   }
   
-  /*protected function _encode() {
-    $font = $this->getFont();
-    $numOfLongHorMetrics = $font->getData("hhea", "numOfLongHorMetrics");
-    
-    $data = $this->data;
-    $length = 0;
-    for($gid = 0; $gid < $numOfLongHorMetrics; $gid++) {
-      $length += $font->writeUInt16($data[$gid][0]);
-      $length += $font->writeUInt16($data[$gid][1]);
-    }
-    
-    return $length;
-  }*/
-  
   protected function _encode() {
     $font = $this->getFont();
     $subset = $font->getSubset();
     $data = $this->data;
     
     $length = 0;
-    foreach($subset as $code => $gid) {
+    
+    foreach($subset as $gid) {
       $length += $font->writeUInt16($data[$gid][0]);
       $length += $font->writeUInt16($data[$gid][1]);
     }

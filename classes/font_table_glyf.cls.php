@@ -61,33 +61,27 @@ class Font_Table_glyf extends Font_Table {
     $this->data = $data;
   }
   
-  /*
-  protected function _encode(){
-    $font = $this->getFont();
-    $data = $this->data;
-    $loca = array();
-    
-    $length = 0;
-    foreach($data as $gid => $raw) {
-      $loca[$gid] = $length;
-      $length += $font->write($raw, strlen($raw));
-    }
-    
-    $loca[] = $length; // dummy loca
-    $font->getTableObject("loca")->data = $loca;
-    
-    return $length;
-  }*/
-  
   protected function _encode() {
     $font = $this->getFont();
     $subset = $font->getSubset();
+    $compoundGlyphOffsets = $font->compound_glyph_offsets;
     $data = $this->data;
     
+    $loca = array();
+    
     $length = 0;
-    foreach($subset as $code => $gid) {
+    foreach($subset as $gid) {
       $loca[] = $length;
       $raw = $data[$gid];
+      $len = strlen($raw);
+      
+      if (isset($compoundGlyphOffsets[$gid])) {
+        $offsets = $compoundGlyphOffsets[$gid];
+        foreach($offsets as $offset => $newGid) {
+          list($raw[$offset], $raw[$offset+1]) = pack("n", $newGid);
+        }
+      }
+      
       $length += $font->write($raw, strlen($raw));
     }
     
