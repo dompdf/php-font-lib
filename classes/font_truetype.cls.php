@@ -212,6 +212,7 @@ class Font_TrueType extends Font_Binary_Stream {
   
   function utf8toUnicode($str) {
     $len = strlen($str);
+    $out = array();
 
     for ($i = 0; $i < $len; $i++) {
       $uni = -1;
@@ -292,8 +293,8 @@ class Font_TrueType extends Font_Binary_Stream {
   }
   
   function setSubset($subset) {
-    if ( is_array($subset) ) {
-      $subset = implode("", $subset);
+    if ( !is_array($subset) ) {
+      $subset = $this->utf8toUnicode($subset);
     }
     
     $subtable = null;
@@ -307,9 +308,11 @@ class Font_TrueType extends Font_Binary_Stream {
     if (!$subtable) return;
     
     $gids = array();
-    
-    $chars = $this->utf8toUnicode($subset);
-    foreach($chars as $code) {
+    foreach($subset as $code) {
+      if (!isset($subtable["glyphIndexArray"][$code])) {
+        continue;
+      }
+      
       $gids[$code] = $subtable["glyphIndexArray"][$code];
     }
     
@@ -321,6 +324,11 @@ class Font_TrueType extends Font_Binary_Stream {
     $newGlyphOffsets = array();
     
     foreach($gids as $code => $gid) {
+      if ($gid === null) {
+        unset($gids[$code]);
+        continue;
+      }
+      
       $_newGlyphOffsets = array();
       $this->lookupGlyph($gid, $gids, $_newGlyphOffsets, $glyfOffset, $indexToLoc, $gidToCid);
       

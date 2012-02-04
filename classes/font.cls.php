@@ -13,6 +13,8 @@
  * @package php-font-lib
  */
 class Font {
+  static $debug = false;
+  
   /**
    * @param string $file The font file
    * @return Font_TrueType $file
@@ -56,6 +58,7 @@ class Font {
   }
   
   static function d($str) {
+    if (!self::$debug) return;
     echo "$str\n";
   }
   
