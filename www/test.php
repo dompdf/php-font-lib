@@ -53,6 +53,7 @@ foreach($values as $value) {
 $filename = "../fonts/DejaVuSans.ttf";
 $filename_out = "$filename.2.ttf";
 
+Font::$debug = true;
 $font = Font::load($filename);
 $font->parse();
 

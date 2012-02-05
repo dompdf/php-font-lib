@@ -53,13 +53,12 @@ class Font_Table_loca extends Font_Table {
     
     $indexToLocFormat = $font->getData("head", "indexToLocFormat");
     $numGlyphs = $font->getData("maxp", "numGlyphs");
-    
     $length = 0;
     
     // 2 bytes
     if ($indexToLocFormat == 0) {
       for ($i = 0; $i <= $numGlyphs; $i++) {
-        $length += $font->writeUInt32($data[$i] / 2);
+        $length += $font->writeUInt16($data[$i] / 2);
       }
     }
     
