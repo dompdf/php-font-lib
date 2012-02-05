@@ -77,6 +77,13 @@ class Font_Binary_Stream {
   }
   
   /**
+   * Close the internal file pointer
+   */
+  public function close() {
+    return fclose($this->f) != false;
+  }
+  
+  /**
    * Change the internal file pointer
    * 
    * @param resource $fp
