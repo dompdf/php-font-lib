@@ -13,17 +13,17 @@
   <link rel="stylesheet" href="css/blitzer/jquery-ui-1.8.14.custom.css" />
   <script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.8.14.custom.min.js"></script>
-	<script type="text/javascript">
-		$(function() {
-	    $("#tabs").tabs({
-				select: function(event, ui) {
-					if (ui.panel.id == "tabs-unicode-map") {
-						$(ui.panel).load("<?php echo $_SERVER['REQUEST_URI']; ?>&unicodemap=1");
-					}
-				}
-			});
-	  });
-	</script>
+  <script type="text/javascript">
+    $(function() {
+      $("#tabs").tabs({
+        select: function(event, ui) {
+          if (ui.panel.id == "tabs-unicode-map") {
+            $(ui.panel).load("<?php echo $_SERVER['REQUEST_URI']; ?>&unicodemap=1");
+          }
+        }
+      });
+    });
+  </script>
 </head>
 <body>
 <?php 
@@ -64,8 +64,8 @@ if ($unicodemap) {
   }
   
   $empty = 0;
-	$names = $font->getData("post", "names");
-	
+  $names = $font->getData("post", "names");
+  
   for($c = 0; $c <= 0xFFFF; $c++) { 
     if (($c % 256 == 0 || $c == 0xFFFF) && $empty > 0) {
       echo "<b style=\"width:".($empty*3)."px\"></b>";
@@ -73,8 +73,8 @@ if ($unicodemap) {
     }
     
     if (isset($subtable["glyphIndexArray"][$c])) {
-    	$g = $subtable["glyphIndexArray"][$c];
-			
+      $g = $subtable["glyphIndexArray"][$c];
+      
       if ($empty > 0) {
         echo "<b style=\"width:".($empty*3)."px\"></b>";
         $empty = 0;
@@ -100,6 +100,8 @@ else {
   File size: <?php echo round(filesize($fontfile) / 1024, 3); ?>KB &mdash;
   Memory: <?php echo (memory_get_peak_usage(true) / 1024); ?>KB &mdash;
   Time: <?php echo round(microtime(true) - $t, 4); ?>s
+  <br />
+  <a href="make_subset.php?fontfile=<?php echo $fontfile; ?>&amp;name=<?php echo urlencode($records[3]); ?>">Make a subset of this font</a>
 </span>
 
 <h1><?php echo $records[3]; ?></h1>
@@ -107,36 +109,36 @@ else {
 <hr />
 
 <div id="tabs">
-	<ul>
-	  <?php foreach($font->getTable() as $table) {
-	    $tag = $table->tag; 
-	    $data = $font->getData($tag); 
-	    ?>
-	    <li>
+  <ul>
+    <?php foreach($font->getTable() as $table) {
+      $tag = $table->tag; 
+      $data = $font->getData($tag); 
+      ?>
+      <li>
         <a <?php if (!$data) { ?> style="color: #ccc;" <?php } ?> href="#tabs-<?php echo preg_replace("/[^a-z0-9]/i", "_", $tag); ?>"><?php echo $tag; ?></a>
       </li>
-	  <?php } ?>
-		<li><a href="#tabs-unicode-map">Unicode map</a></li>
-	</ul>
-	
-	<?php foreach($font->getTable() as $table) {
+    <?php } ?>
+    <li><a href="#tabs-unicode-map">Unicode map</a></li>
+  </ul>
+  
+  <?php foreach($font->getTable() as $table) {
     $tag = $table->tag;
     $data = $font->getData($tag); 
     ?>
-	  <div id="tabs-<?php echo preg_replace("/[^a-z0-9]/i", "_", $tag); ?>">
-		  <pre><?php 
-		  if ($data) {
-		    var_export($data); 
-		  }
-		  else {
-		    echo "Not yet implemented";
-		  }
-		  
-		  ?></pre>
-		</div>
-		
+    <div id="tabs-<?php echo preg_replace("/[^a-z0-9]/i", "_", $tag); ?>">
+      <pre><?php 
+      if ($data) {
+        var_export($data); 
+      }
+      else {
+        echo "Not yet implemented";
+      }
+      
+      ?></pre>
+    </div>
+    
     <div id="tabs-unicode-map"></div>
-	<?php } ?>
+  <?php } ?>
 </div>
 
 <?php } ?>
