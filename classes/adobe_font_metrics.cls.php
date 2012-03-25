@@ -4,7 +4,7 @@
  * @link    http://php-font-lib.googlecode.com/
  * @author  Fabien Ménager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id$
+ * @version $Id: adobe_font_metrics.cls.php 35 2011-11-02 22:30:45Z fabien.menager $
  */
 
 require_once dirname(__FILE__)."/encoding_map.cls.php";
@@ -69,15 +69,15 @@ class Adobe_Font_Metrics {
     
     $hhea = $font->getData("hhea");
     
-    if (isset($os2["typoAscender"])) {
-      $this->addPair("FontHeightOffset",  $font->normalizeFUnit($os2["typoLineGap"]));
-      $this->addPair("Ascender",  $font->normalizeFUnit($os2["typoAscender"]));
-      $this->addPair("Descender", $font->normalizeFUnit($os2["typoDescender"]));
-    }
-    else {
+    if (isset($hhea["ascent"])) {
       $this->addPair("FontHeightOffset",  $font->normalizeFUnit($hhea["lineGap"]));
       $this->addPair("Ascender",  $font->normalizeFUnit($hhea["ascent"]));
       $this->addPair("Descender", $font->normalizeFUnit($hhea["descent"]));
+    }
+    else {
+      $this->addPair("FontHeightOffset",  $font->normalizeFUnit($os2["typoLineGap"]));
+      $this->addPair("Ascender",  $font->normalizeFUnit($os2["typoAscender"]));
+      $this->addPair("Descender", -abs($font->normalizeFUnit($os2["typoDescender"])));
     }
     
     $head = $font->getData("head");
