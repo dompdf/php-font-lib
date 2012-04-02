@@ -2,9 +2,9 @@
 /**
  * @package php-font-lib
  * @link    http://php-font-lib.googlecode.com/
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id$
+ * @version $Id: font_binary_stream.cls.php 42 2012-02-05 10:49:20Z fabien.menager $
  */
 
 /**

@@ -58,7 +58,7 @@ $font = Font::load($filename);
 $font->parse();
 
 
-$font->setSubset(utf8_encode("I am a test string with unicode chars ���~@` and number 12496"));
+$font->setSubset(utf8_encode("I am a test string with unicode chars éèàçîïö` and number 12496"));
 $font->reduce();
 
 $font->open($filename_out, Font_Binary_Stream::modeWrite);
