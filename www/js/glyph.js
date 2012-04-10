@@ -12,7 +12,7 @@ var Glyph = {
   	return path.match(/([a-z])|(-?\d+(?:\.\d+)?)/ig);
   },
   
-  drawSVGPath: function(ctx, path) {
+  drawSVGContours: function(ctx, path) {
     var p = Glyph.splitPath(path);
     
     if (!p) {
@@ -28,15 +28,15 @@ var Glyph = {
       switch(v) {
         case "M": 
           ctx.beginPath();
-          ctx.moveTo(parseFloat(p[++i]), parseFloat(p[++i])); 
+          ctx.moveTo(p[++i], p[++i]); 
           break;
           
         case "L": 
-          ctx.lineTo(parseFloat(p[++i]), parseFloat(p[++i])); 
+          ctx.lineTo(p[++i], p[++i]); 
           break;
           
         case "Q": 
-          ctx.quadraticCurveTo(parseFloat(p[++i]), parseFloat(p[++i]), parseFloat(p[++i]), parseFloat(p[++i]));
+          ctx.quadraticCurveTo(p[++i], p[++i], p[++i], p[++i]);
           break;
           
         case "z": 
@@ -126,6 +126,6 @@ var Glyph = {
     ctx.strokeStyle = "black";
     ctx.globalCompositeOperation = "xor";
     
-    Glyph.drawSVGPath(ctx, shape.SVGPath);
+    Glyph.drawSVGContours(ctx, shape.SVGContours);
   }
 };

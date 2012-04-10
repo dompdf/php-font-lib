@@ -77,7 +77,7 @@ class Font_Table_glyf extends Font_Table {
       }
       
       $shape = $glyph->getGlyphData();
-      $shape["SVGPath"] = $glyph->getSVGPath();
+      $shape["SVGContours"] = $glyph->getSVGContours();
       unset($shape["points"]);
       unset($shape["instructions"]);
       $shape_json = json_encode($shape);

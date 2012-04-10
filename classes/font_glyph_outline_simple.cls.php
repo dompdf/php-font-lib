@@ -114,7 +114,7 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
     return $this->data = $data;
   }
 
-  public function getSVGPath(){
+  public function getSVGContours(){
     $path = "";
     
     $points = $this->data["points"];
@@ -126,7 +126,7 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
       $count++;
       
       if ($points[$i]["endOfContour"]) {
-        $path .= $this->addContourToPath($points, $firstIndex, $count);
+        $path .= $this->getSVGPath($points, $firstIndex, $count);
         $firstIndex = $i + 1;
         $count = 0;
       }
@@ -140,42 +140,45 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
     return $matches[0];
   }
   
-  protected function addContourToPath($points, $startIndex, $count) {
+  protected function getSVGPath($points, $startIndex, $count) {
     $offset = 0;
     $path = "";
     
     while($offset < $count) {
-      $point_m1 = $points[ ($offset == 0) ? ($startIndex+$count-1) : $startIndex+($offset-1)%$count ];
-      $point    = $points[ $startIndex + $offset%$count ];
+      $point    = $points[ $startIndex +  $offset   %$count ];
       $point_p1 = $points[ $startIndex + ($offset+1)%$count ];
-      $point_p2 = $points[ $startIndex + ($offset+2)%$count ];
       
       if($offset == 0) {
         $path .= "M{$point['x']},{$point['y']} ";
       }
       
-      if ($point["onCurve"] && $point_p1["onCurve"]) {
-        $path .= "L{$point_p1['x']},{$point_p1['y']} ";
-        $offset++;
-      } 
-      else if ($point["onCurve"] && !$point_p1["onCurve"] && $point_p2["onCurve"]){
-        $path .= "Q{$point_p1['x']},{$point_p1['y']},{$point_p2['x']},{$point_p2['y']} ";
-        $offset += 2;
-      } 
-      else if ($point["onCurve"] && !$point_p1["onCurve"] && !$point_p2["onCurve"]){
-        $path .= "Q{$point_p1['x']},{$point_p1['y']},".$this->midValue($point_p1['x'], $point_p2['x']).",".$this->midValue($point_p1['y'], $point_p2['y'])." ";
-        $offset += 2;
-      } 
-      else if (!$point["onCurve"] && !$point_p1["onCurve"]) {
-        $path .= "Q{$point['x']},{$point['y']},".$this->midValue($point['x'], $point_p1['x']).",".$this->midValue($point['y'], $point_p1['y'])." ";
-        $offset++;
-      } 
-      else if (!$point["onCurve"] && $point_p1["onCurve"]) {
-        $path .= "Q{$point['x']},{$point['y']},{$point_p1['x']},{$point_p1['y']} ";
-        $offset++;
-      } 
+      if ($point["onCurve"]) {
+        if ($point_p1["onCurve"]) {
+          $path .= "L{$point_p1['x']},{$point_p1['y']} ";
+          $offset++;
+        }
+        else {
+          $point_p2 = $points[ $startIndex + ($offset+2)%$count ];
+          
+          if ($point_p2["onCurve"]){
+            $path .= "Q{$point_p1['x']},{$point_p1['y']},{$point_p2['x']},{$point_p2['y']} ";
+          } 
+          else {
+            $path .= "Q{$point_p1['x']},{$point_p1['y']},".$this->midValue($point_p1['x'], $point_p2['x']).",".$this->midValue($point_p1['y'], $point_p2['y'])." ";
+          } 
+          
+          $offset += 2;
+        }
+      }
       else {
-        break;
+        if ($point_p1["onCurve"]) {
+          $path .= "Q{$point['x']},{$point['y']},{$point_p1['x']},{$point_p1['y']} ";
+        }
+        else {
+          $path .= "Q{$point['x']},{$point['y']},".$this->midValue($point['x'], $point_p1['x']).",".$this->midValue($point['y'], $point_p1['y'])." ";
+        }
+        
+        $offset++;
       }
     }
     
