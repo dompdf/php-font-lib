@@ -4,7 +4,7 @@
  * @link    http://php-font-lib.googlecode.com/
  * @author  Fabien Ménager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: font_truetype.cls.php 41 2012-02-04 18:01:38Z fabien.menager $
+ * @version $Id$
  */
 
 $dir = dirname(__FILE__);
@@ -238,6 +238,20 @@ class Font_TrueType extends Font_Binary_Stream {
     return $out;
   }
   
+  function getUnicodeCharMap() {
+    $subtable = null;
+    foreach($this->getData("cmap", "subtables") as $_subtable) {
+      if ($_subtable["platformID"] == 0 || $_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1) {
+        $subtable = $_subtable;
+        break;
+      }
+    }
+    
+    if ($subtable) {
+      return $subtable["glyphIndexArray"];
+    }
+  }
+  
   function lookupGlyph($gid, &$gids, &$newGlyphOffsets, $glyfOffset, $indexToLoc, $gidToCid) {
     $this->seek($glyfOffset + $indexToLoc[$gid]);
     
@@ -268,27 +282,27 @@ class Font_TrueType extends Font_Binary_Stream {
         $offset = 0;
         
         // skip some bytes by case
-        if ($flags & Font_Table_glyf::ARG_1_AND_2_ARE_WORDS) {
+        if ($flags & Font_Glyph_Outline::ARG_1_AND_2_ARE_WORDS) {
           $offset += 4;
         }
         else {
           $offset += 2;
         }
         
-        if ($flags & Font_Table_glyf::WE_HAVE_A_SCALE) {
+        if ($flags & Font_Glyph_Outline::WE_HAVE_A_SCALE) {
           $offset += 2;
         }
-        elseif ($flags & Font_Table_glyf::WE_HAVE_AN_X_AND_Y_SCALE) {
+        elseif ($flags & Font_Glyph_Outline::WE_HAVE_AN_X_AND_Y_SCALE) {
           $offset += 4;
         }
-        elseif ($flags & Font_Table_glyf::WE_HAVE_A_TWO_BY_TWO) {
+        elseif ($flags & Font_Glyph_Outline::WE_HAVE_A_TWO_BY_TWO) {
           $offset += 8;
         }
         
         $this->skip($offset);
         $compoundOffset += $offset;
         
-      } while ($flags & Font_Table_glyf::MORE_COMPONENTS);
+      } while ($flags & Font_Glyph_Outline::MORE_COMPONENTS);
     }
   }
   

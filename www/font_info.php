@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="css/blitzer/jquery-ui-1.8.14.custom.css" />
   <script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.8.14.custom.min.js"></script>
+  <script type="text/javascript" src="js/glyph.js"></script>
   <script type="text/javascript">
     $(function() {
       $("#tabs").tabs({
@@ -113,6 +114,7 @@ else {
     <?php foreach($font->getTable() as $table) {
       $tag = $table->tag; 
       $data = $font->getData($tag); 
+      //if ($tag != "glyf") continue;
       ?>
       <li>
         <a <?php if (!$data) { ?> style="color: #ccc;" <?php } ?> href="#tabs-<?php echo preg_replace("/[^a-z0-9]/i", "_", $tag); ?>"><?php echo $tag; ?></a>
@@ -124,17 +126,18 @@ else {
   <?php foreach($font->getTable() as $table) {
     $tag = $table->tag;
     $data = $font->getData($tag); 
+    
     ?>
     <div id="tabs-<?php echo preg_replace("/[^a-z0-9]/i", "_", $tag); ?>">
-      <pre><?php 
+      <?php 
       if ($data) {
-        var_export($data); 
+        echo $font->getTableObject($tag)->toHTML();
       }
       else {
         echo "Not yet implemented";
       }
       
-      ?></pre>
+      ?>
     </div>
     
     <div id="tabs-unicode-map"></div>

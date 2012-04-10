@@ -69,3 +69,38 @@ hr {
 .unicode-map b {
   background: #999;
 }
+
+.glyph-view {
+  display: inline-block;
+  background: #ddd;
+  padding: 3px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.glyph-view span {
+  display: inline-block;
+  padding: 1px;
+  min-width: 1em;
+  margin-bottom: 2px;
+  white-space: pre;
+}
+  
+.glyph-view .char {
+  background: #bbb;
+  float: left;
+}
+
+.glyph-view .glyph-id {
+  float: right;
+}
+
+.glyph-view .char:empty {
+  display: none;
+}
+
+.glyph-view canvas {
+  background: #fff;
+}

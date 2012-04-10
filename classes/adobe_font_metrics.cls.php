@@ -4,7 +4,7 @@
  * @link    http://php-font-lib.googlecode.com/
  * @author  Fabien Ménager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: adobe_font_metrics.cls.php 35 2011-11-02 22:30:45Z fabien.menager $
+ * @version $Id$
  */
 
 require_once dirname(__FILE__)."/encoding_map.cls.php";
@@ -88,18 +88,11 @@ class Adobe_Font_Metrics {
       $font->normalizeFUnit($head["yMax"]),
     ));
     
-    $subtable = null;
-    foreach($font->getData("cmap", "subtables") as $_subtable) {
-      if ($_subtable["platformID"] == 0 || $_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1) {
-        $subtable = $_subtable;
-        break;
-      }
-    }
+    $glyphIndexArray = $font->getUnicodeCharMap();
     
-    if ($subtable) {
+    if ($glyphIndexArray) {
       $hmtx = $font->getData("hmtx");
       $names = $font->getData("post", "names");
-      $glyphIndexArray = $subtable["glyphIndexArray"];
       
       $this->startSection("CharMetrics", count($hmtx));
         
