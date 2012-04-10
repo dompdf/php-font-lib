@@ -114,7 +114,7 @@ else {
     <?php foreach($font->getTable() as $table) {
       $tag = $table->tag; 
       $data = $font->getData($tag); 
-      //if ($tag != "glyf") continue;
+      
       ?>
       <li>
         <a <?php if (!$data) { ?> style="color: #ccc;" <?php } ?> href="#tabs-<?php echo preg_replace("/[^a-z0-9]/i", "_", $tag); ?>"><?php echo $tag; ?></a>

@@ -135,6 +135,11 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
     return $path;
   }
   
+  public function parseSVGPath($path) {
+    preg_match_all('/([a-z])|(-?\d+(?:\.\d+)?)/i', $path, $matches, PREG_PATTERN_ORDER);
+    return $matches[0];
+  }
+  
   protected function addContourToPath($points, $startIndex, $count) {
     $offset = 0;
     $path = "";
@@ -150,7 +155,7 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
       }
       
       if ($point["onCurve"] && $point_p1["onCurve"]) {
-        $path .= "Q{$point_p1['x']},{$point_p1['y']} ";
+        $path .= "L{$point_p1['x']},{$point_p1['y']} ";
         $offset++;
       } 
       else if ($point["onCurve"] && !$point_p1["onCurve"] && $point_p2["onCurve"]){

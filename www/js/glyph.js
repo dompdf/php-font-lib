@@ -12,89 +12,77 @@ var Glyph = {
   	return path.match(/([a-z])|(-?\d+(?:\.\d+)?)/ig);
   },
   
-  addContourToPath: function(ctx, points, startIndex, count) {
-    ctx.beginPath();
+  drawSVGPath: function(ctx, path) {
+    var p = Glyph.splitPath(path);
     
-    var offset = 0;
-    
-    while(offset < count) {
-      var point_m1 = points[ (offset == 0) ? (startIndex+count-1) : startIndex+(offset-1)%count ];
-      var point    = points[ startIndex + offset%count ];
-      var point_p1 = points[ startIndex + (offset+1)%count ];
-      var point_p2 = points[ startIndex + (offset+2)%count ];
-      
-      if(offset == 0) {
-        ctx.moveTo(point.x, point.y);
-      }
-      
-      if (point.onCurve && point_p1.onCurve) {
-        ctx.lineTo( point_p1.x, point_p1.y );
-        offset++;
-      } 
-      else if (point.onCurve && !point_p1.onCurve && point_p2.onCurve){
-        ctx.quadraticCurveTo(point_p1.x, point_p1.y, point_p2.x, point_p2.y);
-        offset += 2;
-      } 
-      else if (point.onCurve && !point_p1.onCurve && !point_p2.onCurve){
-        ctx.quadraticCurveTo(point_p1.x, point_p1.y, Glyph.midValue(point_p1.x, point_p2.x), Glyph.midValue(point_p1.y, point_p2.y));
-        offset += 2;
-      } 
-      else if (!point.onCurve && !point_p1.onCurve) {
-        ctx.quadraticCurveTo(point.x, point.y, Glyph.midValue(point.x, point_p1.x), Glyph.midValue(point.y, point_p1.y));
-        offset++;
-      } 
-      else if (!point.onCurve && point_p1.onCurve) {
-        ctx.quadraticCurveTo(point.x, point.y, point_p1.x, point_p1.y);
-        offset++;
-      } 
-      else {
-        console.error("error");
-        break;
-      }
+    if (!p) {
+      return;
     }
     
+    var l = p.length;
+    var i = 0;
+    
+    while(i < l) {
+      var v = p[i];
+      
+      switch(v) {
+        case "M": 
+          ctx.beginPath();
+          ctx.moveTo(parseFloat(p[++i]), parseFloat(p[++i])); 
+          break;
+          
+        case "L": 
+          ctx.lineTo(parseFloat(p[++i]), parseFloat(p[++i])); 
+          break;
+          
+        case "Q": 
+          ctx.quadraticCurveTo(parseFloat(p[++i]), parseFloat(p[++i]), parseFloat(p[++i]), parseFloat(p[++i]));
+          break;
+          
+        case "z": 
+          ctx.closePath(); 
+          ctx.fill();
+          i++;
+          break;
+        
+        default: 
+          i++;
+      }
+    }
+  },
+  
+  drawHorizLine: function(ctx, y, color) {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.moveTo(0, y);
+    ctx.lineTo(Glyph.width * Glyph.ratio, y);
     ctx.closePath();
-    ctx.fill();
+    ctx.stroke();
   },
   
   draw: function (canvas, shape, gid) {
-    var element = canvas[0];
-    var ctx    = element.getContext("2d");
-    var width  = element.width;
-    var height = element.height;
-    var ratio  = Glyph.ratio;
+    var element  = canvas[0];
+    var ctx      = element.getContext("2d");
+    var ratio    = Glyph.ratio;
+    Glyph.width  = element.width;
+    Glyph.height = element.height;
     
     ctx.lineWidth = ratio;
     
     // Invert axis
-    ctx.translate(0, height);
+    ctx.translate(0, Glyph.height);
     ctx.scale(1/ratio, -(1/ratio));
     
     ctx.translate(0, -Glyph.head.yMin);
     
     // baseline
-    ctx.beginPath();
-    ctx.strokeStyle = "rgba(0,255,0,0.2)";
-    ctx.moveTo(0,             0);
-    ctx.lineTo(width * ratio, 0);
-    ctx.closePath();
-    ctx.stroke();
+    Glyph.drawHorizLine(ctx, 0, "rgba(0,255,0,0.2)");
     
     // ascender
-    ctx.beginPath();
-    ctx.strokeStyle = "rgba(255,0,0,0.2)";
-    ctx.moveTo(0,             Glyph.os2.typoAscender);
-    ctx.lineTo(width * ratio, Glyph.os2.typoAscender);
-    ctx.closePath();
-    ctx.stroke();
+    Glyph.drawHorizLine(ctx, Glyph.os2.typoAscender, "rgba(255,0,0,0.2)");
     
     // descender
-    ctx.beginPath();
-    ctx.strokeStyle = "rgba(255,0,0,0.2)";
-    ctx.moveTo(0,             -Math.abs(Glyph.os2.typoDescender));
-    ctx.lineTo(width * ratio, -Math.abs(Glyph.os2.typoDescender));
-    ctx.closePath();
-    ctx.stroke();
+    Glyph.drawHorizLine(ctx, -Math.abs(Glyph.os2.typoDescender), "rgba(255,0,0,0.2)");
     
     ctx.translate(-Glyph.head.xMin, 0);
     
@@ -138,19 +126,6 @@ var Glyph = {
     ctx.strokeStyle = "black";
     ctx.globalCompositeOperation = "xor";
     
-    var points = shape.points;
-    var length = points.length;
-    var firstIndex = 0;
-    var count      = 0;
-    
-    for (var i = 0; i < length; i++) {
-      count++;
-      
-      if (points[i].endOfContour) {
-        Glyph.addContourToPath(ctx, points, firstIndex, count);
-        firstIndex = i + 1;
-        count = 0;
-      }
-    }
+    Glyph.drawSVGPath(ctx, shape.SVGPath);
   }
 };

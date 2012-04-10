@@ -58,7 +58,7 @@ class Font_Table_glyf extends Font_Table {
       $height = round($height/$ratio);
     }
     
-    $n = 100;
+    $n = 200;
     
     $s = "<h3>Only the first $n simple glyphs are shown</h3><script>
     Glyph.ratio = $ratio; 
@@ -76,7 +76,11 @@ class Font_Table_glyf extends Font_Table {
         break;
       }
       
-      $shape_json = json_encode($glyph->getGlyphData());
+      $shape = $glyph->getGlyphData();
+      $shape["SVGPath"] = $glyph->getSVGPath();
+      unset($shape["points"]);
+      unset($shape["instructions"]);
+      $shape_json = json_encode($shape);
     
       $char = isset($glyphIndexArray[$g]) ? "&#{$glyphIndexArray[$g]};" : "";
       $name = isset($names[$g]) ? $names[$g] : sprintf("uni%04x", $char);
