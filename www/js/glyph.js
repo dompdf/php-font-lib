@@ -8,6 +8,10 @@ var Glyph = {
     return a + (b - a)/2;
   },
   
+  splitPath: function(path) {
+  	return path.match(/([a-z])|(-?\d+(?:\.\d+)?)/ig);
+  },
+  
   addContourToPath: function(ctx, points, startIndex, count) {
     ctx.beginPath();
     
@@ -119,6 +123,10 @@ var Glyph = {
       ctx.closePath();
       ctx.stroke();
     ctx.restore();
+    
+    if (!shape) {
+      return;
+    }
     
     // glyph bounding box
     ctx.beginPath();

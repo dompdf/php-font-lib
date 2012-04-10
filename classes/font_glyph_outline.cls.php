@@ -73,6 +73,10 @@ class Font_Glyph_Outline extends Font_Binary_Stream {
   function parse() {
     $font = $this->getFont();
     $font->seek($this->offset);
+  
+    if (!$this->size) {
+      return;
+    }
     
     $data = $font->unpack(array(
       "numberOfContours" => self::int16,
