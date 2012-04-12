@@ -90,4 +90,9 @@ class Font_Glyph_Outline extends Font_Binary_Stream {
     
     return $this->data = $data;
   }
+  
+  function encode(){
+    $font = $this->getFont();
+    $font->seek($this->offset);
+  }
 }

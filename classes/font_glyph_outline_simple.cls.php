@@ -113,11 +113,139 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
     $this->table = null;
     return $this->data = $data;
   }
+  
+  public function splitSVGPath($path) {
+    preg_match_all('/([a-z])|(-?\d+(?:\.\d+)?)/i', $path, $matches, PREG_PATTERN_ORDER);
+    return $matches[0];
+  }
+  
+  public function makePoints($path) {
+    $path = $this->splitSVGPath($path);
+    $l = count($path);
+    $i = 0;
+    
+    $points = array();
+    
+    while($i < $l) {
+      switch($path[$i]) {
+        // moveTo
+        case "M":
+          //if ($i == 0) {
+            $points[] = array(
+              "onCurve" => true,
+              "x"       => $path[++$i],
+              "y"       => $path[++$i],
+              "endOfContour" => ($path[$i] === "z"),
+            );
+          //}
+          break;
+          
+        // lineTo
+        case "L":
+          $points[] = array(
+            "onCurve" => true,
+            "x"       => $path[++$i],
+            "y"       => $path[++$i],
+            "endOfContour" => ($path[$i] === "z"),
+          );
+          break;
+        
+        // quadraticCurveTo
+        case "Q":
+          $points[] = array(
+            "onCurve" => false,
+            "x"       => $path[++$i],
+            "y"       => $path[++$i],
+            "endOfContour" => false,
+          );
+          $points[] = array(
+            "onCurve" => true,
+            "x"       => $path[++$i],
+            "y"       => $path[++$i],
+            "endOfContour" => ($path[$i] === "z"),
+          );
+          break;
+        
+        // closePath
+        default:
+        case "z":
+          $i++;
+          break;
+      }
+    }
+    
+    return $points;
+  }
 
-  public function getSVGContours(){
+  function encode(){
+    parent::encode();
+    
+    return $this->encodePoints($this->data["points"]);
+  }
+
+  public function encodePoints($points) {
+    $endPtsOfContours = array();
+    $flags = array();
+    $coords_x = array();
+    $coords_y = array();
+    
+    $last_x = 10e10;
+    $last_y = 10e10;
+    foreach($points as $i => $point) {
+      $flag = 0;
+      if ($point["onCurve"]) {
+        $flag |= self::ON_CURVE;
+      }
+      
+      if ($point["endOfContour"]) {
+        $endPtsOfContours[] = $i;
+      }
+      
+      // Simplified, we could do some optimizations
+      if ($point["x"] == $last_x) {
+        $flag |= self::THIS_X_IS_SAME;
+      }
+      else {
+        $coords_x[] = intval($point["x"]); // int16
+      }
+      
+      // Simplified, we could do some optimizations
+      if ($point["y"] == $last_y) {
+        $flag |= self::THIS_Y_IS_SAME;
+      }
+      else {
+        $coords_y[] = intval($point["y"]); // int16
+      }
+      
+      $flags[] = $flag;
+      $last_x = $point["x"];
+      $last_y = $point["y"];
+    }
+    
+    $font = $this->getFont();
+    
+    $l = 0;
+    $l += $font->writeInt16(count($endPtsOfContours)); // endPtsOfContours
+    $l += $font->writeInt16(min($coords_x)); // xMin
+    $l += $font->writeInt16(min($coords_y)); // yMin
+    $l += $font->writeInt16(max($coords_x)); // xMax
+    $l += $font->writeInt16(max($coords_y)); // yMax
+    $l += $font->w(array(self::uint16, count($endPtsOfContours)), $endPtsOfContours); // endPtsOfContours
+    $l += $font->writeInt16(0); // instructionLength
+    $l += $font->w(array(self::uint8, count($flags)), $flags); // flags
+    $l += $font->w(array(self::int16, count($coords_x)), $coords_x); // xCoordinates
+    $l += $font->w(array(self::int16, count($coords_y)), $coords_y); // yCoordinates
+    
+    return $l;
+  } 
+
+  public function getSVGContours($points = null){
     $path = "";
     
-    $points = $this->data["points"];
+    if (!$points) {
+      $points = $this->data["points"];
+    }
+    
     $length = count($points);
     $firstIndex = 0;
     $count = 0;
@@ -133,11 +261,6 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
     }
     
     return $path;
-  }
-  
-  public function parseSVGPath($path) {
-    preg_match_all('/([a-z])|(-?\d+(?:\.\d+)?)/i', $path, $matches, PREG_PATTERN_ORDER);
-    return $matches[0];
   }
   
   protected function getSVGPath($points, $startIndex, $count) {
