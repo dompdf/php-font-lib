@@ -51,6 +51,10 @@ class Font_Binary_Stream {
   const modeRead      = "rb";
   const modeWrite     = "wb";
   const modeReadWrite = "rb+";
+  
+  static function backtrace(){
+    var_dump(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
+  }
 
   /**
    * Open a font file in read mode
@@ -177,12 +181,19 @@ class Font_Binary_Stream {
 
   public function readUInt16() {
     $a = unpack("nn", $this->read(2));
-    //if ($a == null) var_dump(debug_backtrace(false));
     return $a["n"];
+  }
+  
+  public function readUFWord(){
+    return $this->readUInt16();
   }
 
   public function writeUInt16($data) {
     return $this->write(pack("n", $data), 2);
+  }
+  
+  public function writeUFWord($data){
+    return $this->writeUInt16($data);
   }
 
   public function readInt16() {
@@ -194,6 +205,10 @@ class Font_Binary_Stream {
       
     return $v;
   }
+  
+  public function readFWord(){
+    return $this->readInt16();
+  }
 
   public function writeInt16($data) {
     if ($data < 0) {
@@ -201,6 +216,10 @@ class Font_Binary_Stream {
     }
     
     return $this->writeUInt16($data);
+  }
+  
+  public function writeFWord($data){
+    return $this->writeInt16($data);
   }
 
   public function readUInt32() {

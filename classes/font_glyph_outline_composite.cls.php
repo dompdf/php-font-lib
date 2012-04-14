@@ -13,14 +13,15 @@
  * @package php-font-lib
  */
 class Font_Glyph_Outline_Composite extends Font_Glyph_Outline {
-  function parse(){
-    $data = parent::parse();
+  public $flags;
+  public $glyphIndex;
+  
+  function parseData(){
+    parent::parseData();
+    
     $font = $this->getFont();
     
-    $data["flags"]      = $font->readUInt16();
-    $data["glyphIndex"] = $font->readUInt16();
-    
-    $this->table = null;
-    return $this->data = $data;
+    $this->flags      = $font->readUInt16();
+    $this->glyphIndex = $font->readUInt16();
   }
 }

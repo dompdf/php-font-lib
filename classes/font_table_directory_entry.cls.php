@@ -59,7 +59,10 @@ class Font_Table_Directory_Entry extends Font_Binary_Stream {
   function __construct(Font_TrueType $font) {
     $this->font = $font;
     $this->f = $font->f;
-    $this->tag = $this->read(4);
+  }
+  
+  function parse() {
+    $this->tag = $this->font->read(4);
   }
   
   function open($filename, $mode = self::modeRead) {
@@ -78,6 +81,7 @@ class Font_Table_Directory_Entry extends Font_Binary_Stream {
     $font = $this->font;
     
     $table_offset = $font->pos();
+    $this->offset = $table_offset;
     $table_length = $data->encode();
     
     $font->seek($table_offset);
@@ -103,7 +107,7 @@ class Font_Table_Directory_Entry extends Font_Binary_Stream {
   }
   
   function startRead() {
-    $this->seek($this->offset);
+    $this->font->seek($this->offset);
   }
   
   function endRead() {
@@ -111,7 +115,7 @@ class Font_Table_Directory_Entry extends Font_Binary_Stream {
   }
   
   function startWrite() {
-    $this->seek($this->offset);
+    $this->font->seek($this->offset);
   }
   
   function endWrite() {

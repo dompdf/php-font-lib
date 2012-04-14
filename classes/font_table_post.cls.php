@@ -116,7 +116,6 @@ class Font_Table_post extends Font_Table {
         
         //$names = array_slice($names, 257);
         foreach($names as $name) {
-          var_dump($name);
           $len = strlen($name);
           $length += $font->writeUInt8($len);
           $length += $font->write($name, $len);

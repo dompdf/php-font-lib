@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="css/blitzer/jquery-ui-1.8.14.custom.css" />
   <script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.8.14.custom.min.js"></script>
-  <script type="text/javascript" src="js/glyph.js"></script>
+  <script type="text/javascript" src="js/glyph.js?v=2"></script>
   <script type="text/javascript">
     $(function() {
       $("#tabs").tabs({
@@ -111,8 +111,8 @@ else {
 
 <div id="tabs">
   <ul>
-    <?php foreach($font->getTable() as $table) {
-      $tag = $table->tag; 
+    <?php foreach($font->getTable() as $entry) {
+      $tag = $entry->tag; 
       $data = $font->getData($tag); 
       
       ?>

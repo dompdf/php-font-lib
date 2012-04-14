@@ -33,7 +33,8 @@ class Font_TrueType extends Font_Binary_Stream {
   protected $data = array();
   
   protected $glyph_subset = array();
-  protected $glyph_all = array();
+  
+  public $glyph_all = array();
   public $compound_glyph_offsets = array();
   
   static $nameIdCodes = array(
@@ -321,7 +322,9 @@ class Font_TrueType extends Font_Binary_Stream {
     
     if (!$subtable) return;
     
-    $gids = array();
+    $gids = array(
+      0 => 0 // Required glyph
+    );
     foreach($subset as $code) {
       if (!isset($subtable["glyphIndexArray"][$code])) {
         continue;
@@ -431,6 +434,8 @@ class Font_TrueType extends Font_Binary_Stream {
     
     for($i = 0; $i < $this->header->data["numTables"]; $i++) {
       $entry = new $class($this);
+      $entry->parse();
+      
       $this->directory[$entry->tag] = $entry;
     }
   }
@@ -467,6 +472,10 @@ class Font_TrueType extends Font_Binary_Stream {
     return $this->data[$name];
   }
   
+  public function setTableObject($name, Font_Table $data) {
+    $this->data[$name] = $data;
+  }
+  
   public function getData($name, $key = null) {
     $this->parseTableEntries();
     
@@ -484,6 +493,10 @@ class Font_TrueType extends Font_Binary_Stream {
     else {
       return $this->data[$name]->data[$key];
     }
+  }
+  
+  function addDirectoryEntry(Font_Table_Directory_Entry $entry) {
+    $this->directory[$entry->tag] = $entry;
   }
   
   function saveAdobeFontMetrics($file, $encoding = null) {

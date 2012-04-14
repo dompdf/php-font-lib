@@ -32,7 +32,7 @@ class Font_Table_glyf extends Font_Table {
     
     $this->data = $data;
   }
-  
+    
   public function toHTML(){
     $max = 160;
     $font = $this->getFont();
@@ -52,19 +52,21 @@ class Font_Table_glyf extends Font_Table {
     $width  = (abs($head["xMin"]) + $head["xMax"]);
     $height = (abs($head["yMin"]) + $head["yMax"]);
     
+    $ratio = 1;
     if ($width > $max || $height > $max) {
       $ratio = max($width, $height) / $max;
       $width  = round($width/$ratio);
       $height = round($height/$ratio);
     }
     
-    $n = 200;
+    $n = 100;
     
-    $s = "<h3>Only the first $n simple glyphs are shown</h3><script>
-    Glyph.ratio = $ratio; 
-    Glyph.head  = $head_json;
-    Glyph.os2   = $os2_json;
-    Glyph.hmtx  = $hmtx_json;
+    $s = "<h3>Only the first $n simple glyphs are shown</h3>
+    <script>
+      Glyph.ratio = $ratio; 
+      Glyph.head  = $head_json;
+      Glyph.os2   = $os2_json;
+      Glyph.hmtx  = $hmtx_json;
     </script>";
     
     foreach($this->data as $g => $glyph) {
@@ -72,18 +74,24 @@ class Font_Table_glyf extends Font_Table {
         continue;
       }
       
-      if ($n-- == 0) {
+      if ($n-- <= 0) {
         break;
       }
       
-      $shape = $glyph->getGlyphData();
-      $shape["SVGContours"] = $glyph->getSVGContours();
-      unset($shape["points"]);
-      unset($shape["instructions"]);
+      $glyph->parseData();
+      
+      $shape = array(
+        "SVGContours" => $glyph->getSVGContours(),
+        "xMin" => $glyph->xMin,
+        "yMin" => $glyph->yMin,
+        "xMax" => $glyph->xMax,
+        "yMax" => $glyph->yMax,
+      );
       $shape_json = json_encode($shape);
     
-      $char = isset($glyphIndexArray[$g]) ? "&#{$glyphIndexArray[$g]};" : "";
+      $char = isset($glyphIndexArray[$g]) ? $glyphIndexArray[$g] : 0;
       $name = isset($names[$g]) ? $names[$g] : sprintf("uni%04x", $char);
+      $char = $char ? "&#{$glyphIndexArray[$g]};" : "";
       
       $s .= "<div class='glyph-view'>
               <span class='glyph-id'>$g</span> 
@@ -98,7 +106,7 @@ class Font_Table_glyf extends Font_Table {
     return $s;
   }
   
-  /*
+  
   protected function _encode() {
     $font = $this->getFont();
     $subset = $font->getSubset();
@@ -110,22 +118,21 @@ class Font_Table_glyf extends Font_Table {
     $length = 0;
     foreach($subset as $gid) {
       $loca[] = $length;
-      $raw = $data[$gid];
-      $len = strlen($raw);
+      $glyph = $data[$gid];
       
-      if (isset($compoundGlyphOffsets[$gid])) {
+      if ($glyph instanceof Font_Glyph_Outline_Composite && isset($compoundGlyphOffsets[$gid])) {
         $offsets = $compoundGlyphOffsets[$gid];
         foreach($offsets as $offset => $newGid) {
-          list($raw[$offset], $raw[$offset+1]) = pack("n", $newGid);
+          list($glyph->raw[$offset], $glyph->raw[$offset+1]) = pack("n", $newGid);
         }
       }
       
-      $length += $font->write($raw, strlen($raw));
+      $length += $glyph->encode();
     }
     
     $loca[] = $length; // dummy loca
     $font->getTableObject("loca")->data = $loca;
     
     return $length;
-  }*/
+  }
 }

@@ -20,8 +20,11 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
   const THIS_X_IS_SAME = 0x10;
   const THIS_Y_IS_SAME = 0x20;
   
-  function parse(){
-    $data = parent::parse();
+  public $instructions;
+  public $points;
+  
+  function parseData(){
+    parent::parseData();
   
     if (!$this->size) {
       return;
@@ -29,18 +32,18 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
   
     $font = $this->getFont();
     
-    $noc = $data["numberOfContours"];
-    $data["endPtsOfContours"] = $font->r(array(self::uint16, $noc));
+    $noc = $this->numberOfContours;
     
     if ($noc == 0) {
-      $this->table = null;
       return;
     }
     
-    $instructionLength = $font->readUInt16();
-    $data["instructions"] = $font->r(array(self::uint8, $instructionLength));
+    $endPtsOfContours = $font->r(array(self::uint16, $noc));
     
-    $count = $data["endPtsOfContours"][$noc-1] + 1;
+    $instructionLength = $font->readUInt16();
+    $this->instructions = $font->r(array(self::uint8, $instructionLength));
+    
+    $count = $endPtsOfContours[$noc-1] + 1;
     
     // Flags
     $flags = array();
@@ -61,7 +64,7 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
     $points = array();
     foreach ($flags as $i => $flag) {
       $points[$i]["onCurve"] = $flag & self::ON_CURVE;
-      $points[$i]["endOfContour"] = in_array($i, $data["endPtsOfContours"]);
+      $points[$i]["endOfContour"] = in_array($i, $endPtsOfContours);
     }
     
     // X Coords
@@ -108,10 +111,7 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
       $points[$i]["y"] = $y;
     }
     
-    $data["points"] = $points;
-    
-    $this->table = null;
-    return $this->data = $data;
+    $this->points = $points;
   }
   
   public function splitSVGPath($path) {
@@ -130,14 +130,12 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
       switch($path[$i]) {
         // moveTo
         case "M":
-          //if ($i == 0) {
-            $points[] = array(
-              "onCurve" => true,
-              "x"       => $path[++$i],
-              "y"       => $path[++$i],
-              "endOfContour" => ($path[$i] === "z"),
-            );
-          //}
+          $points[] = array(
+            "onCurve" => true,
+            "x"       => $path[++$i],
+            "y"       => $path[++$i],
+            "endOfContour" => false,
+          );
           break;
           
         // lineTo
@@ -146,7 +144,7 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
             "onCurve" => true,
             "x"       => $path[++$i],
             "y"       => $path[++$i],
-            "endOfContour" => ($path[$i] === "z"),
+            "endOfContour" => false,
           );
           break;
         
@@ -162,13 +160,15 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
             "onCurve" => true,
             "x"       => $path[++$i],
             "y"       => $path[++$i],
-            "endOfContour" => ($path[$i] === "z"),
+            "endOfContour" => false,
           );
           break;
         
         // closePath
-        default:
         case "z":
+          $points[count($points)-1]["endOfContour"] = true;
+        
+        default:
           $i++;
           break;
       }
@@ -178,9 +178,11 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
   }
 
   function encode(){
-    parent::encode();
+    if (empty($this->points)) {
+      return parent::encode();
+    }
     
-    return $this->encodePoints($this->data["points"]);
+    return $this->size = $this->encodePoints($this->points);
   }
 
   public function encodePoints($points) {
@@ -189,8 +191,10 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
     $coords_x = array();
     $coords_y = array();
     
-    $last_x = 10e10;
-    $last_y = 10e10;
+    $last_x = 0;
+    $last_y = 0;
+    $xMin = $yMin = 0xFFFF;
+    $xMax = $yMax = -0xFFFF;
     foreach($points as $i => $point) {
       $flag = 0;
       if ($point["onCurve"]) {
@@ -206,7 +210,10 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
         $flag |= self::THIS_X_IS_SAME;
       }
       else {
-        $coords_x[] = intval($point["x"]); // int16
+        $x = intval($point["x"]);
+        $xMin = min($x, $xMin);
+        $xMax = max($x, $xMax);
+        $coords_x[] = $x-$last_x; // int16
       }
       
       // Simplified, we could do some optimizations
@@ -214,7 +221,10 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
         $flag |= self::THIS_Y_IS_SAME;
       }
       else {
-        $coords_y[] = intval($point["y"]); // int16
+        $y = intval($point["y"]);
+        $yMin = min($y, $yMin);
+        $yMax = max($y, $yMax);
+        $coords_y[] = $y-$last_y; // int16
       }
       
       $flags[] = $flag;
@@ -226,16 +236,17 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
     
     $l = 0;
     $l += $font->writeInt16(count($endPtsOfContours)); // endPtsOfContours
-    $l += $font->writeInt16(min($coords_x)); // xMin
-    $l += $font->writeInt16(min($coords_y)); // yMin
-    $l += $font->writeInt16(max($coords_x)); // xMax
-    $l += $font->writeInt16(max($coords_y)); // yMax
+    $l += $font->writeFWord(isset($this->xMin) ? $this->xMin : $xMin); // xMin
+    $l += $font->writeFWord(isset($this->yMin) ? $this->yMin : $yMin); // yMin
+    $l += $font->writeFWord(isset($this->xMax) ? $this->xMax : $xMax); // xMax
+    $l += $font->writeFWord(isset($this->yMax) ? $this->yMax : $yMax); // yMax
+    
+    // Simple glyf
     $l += $font->w(array(self::uint16, count($endPtsOfContours)), $endPtsOfContours); // endPtsOfContours
-    $l += $font->writeInt16(0); // instructionLength
+    $l += $font->writeUInt16(0); // instructionLength
     $l += $font->w(array(self::uint8, count($flags)), $flags); // flags
     $l += $font->w(array(self::int16, count($coords_x)), $coords_x); // xCoordinates
     $l += $font->w(array(self::int16, count($coords_y)), $coords_y); // yCoordinates
-    
     return $l;
   } 
 
@@ -243,7 +254,7 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
     $path = "";
     
     if (!$points) {
-      $points = $this->data["points"];
+      $points = $this->points;
     }
     
     $length = count($points);
