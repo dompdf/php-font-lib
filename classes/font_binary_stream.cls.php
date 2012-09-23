@@ -350,7 +350,7 @@ class Font_Binary_Stream {
    * Converts a Uint32 value to string
    * 
    * @param int $uint32
-   * @param string The string
+   * @return string The string
    */
   public function convertUInt32ToStr($uint32) {
     return chr(($uint32 >> 24) & 0xFF).chr(($uint32 >> 16) & 0xFF).chr(($uint32 >> 8) & 0xFF).chr($uint32 & 0xFF);

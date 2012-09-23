@@ -406,7 +406,7 @@ class Font_TrueType extends Font_Binary_Stream {
     $this->seek($offset);
     
     $i = 0;
-    foreach($entries as $tag => $entry) {
+    foreach($entries as $entry) {
       $entry->encode($directory_offset + $i * $n);
       $i++;
     }

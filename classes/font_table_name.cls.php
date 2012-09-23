@@ -23,7 +23,6 @@ class Font_Table_name extends Font_Table {
   
   protected function _parse(){
     $font = $this->getFont();
-    $data = array();
     
     $tableOffset = $font->pos();
     
@@ -60,11 +59,7 @@ class Font_Table_name extends Font_Table {
     $this->data["count"] = $count_records;
     $this->data["stringOffset"] = 6 + $count_records * 12; // 6 => uint16 * 3, 12 => sizeof self::$record_format
     
-    $tableOffset = $font->pos();
-    
     $length = $font->pack(self::$header_format, $this->data);
-    
-    $recordsOffset = $font->pos();
     
     $offset = 0;
     foreach($records as $record) {

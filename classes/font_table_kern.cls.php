@@ -16,8 +16,6 @@ class Font_Table_kern extends Font_Table {
   protected function _parse(){
     $font = $this->getFont();
     
-    $tableOffset = $font->pos();
-    
     $data = $font->unpack(array(
       "version"    => self::uint16,
       "nTables"    => self::uint16,

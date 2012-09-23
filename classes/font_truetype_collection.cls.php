@@ -33,12 +33,12 @@ class Font_TrueType_Collection extends Font_Binary_Stream implements Iterator, C
       return;
     }
     
-    $tag = $this->read(4);
+    $this->read(4); // tag name
     
     $this->version = $this->readFixed();
     $this->numFonts = $this->readUInt32();
     
-    for($i = 0; $i < $this->numFonts; $i++) {
+    for ($i = 0; $i < $this->numFonts; $i++) {
       $this->collectionOffsets[] = $this->readUInt32();
     }
   }
