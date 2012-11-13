@@ -7,13 +7,6 @@
  * @version $Id$
  */
 
-$dir = dirname(__FILE__);
-require_once "$dir/font_binary_stream.cls.php";
-require_once "$dir/font_truetype_table_directory_entry.cls.php";
-require_once "$dir/font_truetype_header.cls.php";
-require_once "$dir/font_table.cls.php";
-require_once "$dir/adobe_font_metrics.cls.php";
-
 /**
  * TrueType font file.
  * 

@@ -7,8 +7,6 @@
  * @version $Id$
  */
 
-require_once dirname(__FILE__)."/font_glyph_outline.cls.php";
-
 /**
  * `glyf` font table.
  * 

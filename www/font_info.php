@@ -29,7 +29,7 @@
 <body>
 <?php 
 
-require_once "../classes/font.cls.php";
+require_once dirname(__FILE___)."/../vendor/autoload.php";
 
 $fontfile   = @$_GET["fontfile"];
 $unicodemap = @$_GET["unicodemap"];

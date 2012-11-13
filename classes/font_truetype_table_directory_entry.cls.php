@@ -7,8 +7,6 @@
  * @version $Id$
  */
 
-require_once dirname(__FILE__)."/font_table_directory_entry.cls.php";
-
 /**
  * TrueType table directory entry.
  * 

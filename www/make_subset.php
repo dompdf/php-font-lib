@@ -15,8 +15,8 @@ if (isset($_POST["subset"])) {
   
   ob_start();
   
-  require_once "../classes/font.cls.php";
   
+  require_once dirname(__FILE___)."/../vendor/autoload.php";
   $font = Font::load($fontfile);
   $font->parse();
   

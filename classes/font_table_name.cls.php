@@ -7,8 +7,6 @@
  * @version $Id$
  */
 
-require_once dirname(__FILE__)."/font_table_name_record.cls.php";
-
 /**
  * `name` font table.
  * 

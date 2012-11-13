@@ -7,8 +7,6 @@
  * @version $Id$
  */
 
-require_once dirname(__FILE__)."/font_truetype_header.cls.php";
-
 /**
  * WOFF font file header.
  * 
