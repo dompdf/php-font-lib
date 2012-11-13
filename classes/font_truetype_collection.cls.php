@@ -7,9 +7,6 @@
  * @version $Id$
  */
 
-require_once dirname(__FILE__)."/font_binary_stream.cls.php";
-require_once dirname(__FILE__)."/font_truetype.cls.php";
-
 /**
  * TrueType collection font file.
  * 

@@ -7,9 +7,6 @@
  * @version $Id: font_table_glyf.cls.php 46 2012-04-02 20:22:38Z fabien.menager $
  */
 
-require_once dirname(__FILE__)."/font_glyph_outline_simple.cls.php";
-require_once dirname(__FILE__)."/font_glyph_outline_composite.cls.php";
-
 /**
  * `glyf` font table.
  * 

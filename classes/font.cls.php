@@ -48,8 +48,6 @@ class Font {
     }
     
     if ($class) {
-      require_once dirname(__FILE__)."/".strtolower($class).".cls.php";
-      
       $obj = new $class;
       $obj->load($file);
       

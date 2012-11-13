@@ -8,8 +8,7 @@
 <pre>
 <?php 
 
-require_once "../classes/font_binary_stream.cls.php";
-require_once "../classes/font.cls.php";
+require_once dirname(__FILE___)."/../vendor/autoload.php";
 
 $t = microtime(true);
 

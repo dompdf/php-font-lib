@@ -7,8 +7,6 @@
  * @version $Id$
  */
 
-require_once dirname(__FILE__)."/font_header.cls.php";
-
 /**
  * TrueType font file header.
  * 

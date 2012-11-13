@@ -7,8 +7,6 @@
  * @version $Id$
  */
 
-require_once dirname(__FILE__)."/encoding_map.cls.php";
-
 /**
  * Adobe Font Metrics file creation utility class.
  * 
