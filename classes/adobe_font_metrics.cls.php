@@ -1,10 +1,9 @@
 <?php
 /**
  * @package php-font-lib
- * @link    http://php-font-lib.googlecode.com/
+ * @link    https://github.com/PhenX/php-font-lib
  * @author  Fabien Ménager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id$
  */
 
 require_once dirname(__FILE__)."/encoding_map.cls.php";
@@ -44,7 +43,7 @@ class Adobe_Font_Metrics {
     
     $this->startSection("FontMetrics", 4.1);
     $this->addPair("Notice", "Converted by PHP-font-lib");
-    $this->addPair("Comment", "http://php-font-lib.googlecode.com/");
+    $this->addPair("Comment", "https://github.com/PhenX/php-font-lib");
     
     $encoding_scheme = ($encoding ? $encoding : "FontSpecific");
     $this->addPair("EncodingScheme", $encoding_scheme);

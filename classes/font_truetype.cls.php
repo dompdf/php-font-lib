@@ -1,10 +1,9 @@
 <?php
 /**
  * @package php-font-lib
- * @link    http://php-font-lib.googlecode.com/
+ * @link    https://github.com/PhenX/php-font-lib
  * @author  Fabien Ménager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id$
  */
 
 $dir = dirname(__FILE__);
