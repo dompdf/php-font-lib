@@ -51,7 +51,8 @@ class Font_Table_name extends Font_Table {
   
   protected function _encode(){
     $font = $this->getFont();
-    
+
+    /** @var Font_Table_name_Record[] $records */
     $records = $this->data["records"];
     $count_records = count($records);
     

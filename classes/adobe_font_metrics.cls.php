@@ -26,6 +26,8 @@ class Adobe_Font_Metrics {
   }
   
   function write($file, $encoding = null){
+    $map_data = array();
+
     if ($encoding) {
       $encoding = preg_replace("/[^a-z0-9-_]/", "", $encoding);
       $map_file = dirname(__FILE__)."/../maps/$encoding.map";

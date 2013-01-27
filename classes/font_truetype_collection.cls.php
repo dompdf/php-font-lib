@@ -41,9 +41,11 @@ class Font_TrueType_Collection extends Font_Binary_Stream implements Iterator, C
       $this->collectionOffsets[] = $this->readUInt32();
     }
   }
-  
+
   /**
    * @param int $fontId
+   *
+   * @throws OutOfBoundsException
    * @return Font_TrueType
    */
   function getFont($fontId) {

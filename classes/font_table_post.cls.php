@@ -88,7 +88,8 @@ class Font_Table_post extends Font_Table {
     $length = $font->pack($this->def, $data);
     
     return $length;
-    
+
+    /*
     $subset = $font->getSubset();
     
     switch($data["format"]) {
@@ -135,6 +136,6 @@ class Font_Table_post extends Font_Table {
       break;
     }
     
-    return $length;
+    return $length;*/
   }
 }

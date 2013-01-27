@@ -16,7 +16,7 @@ class Font {
   
   /**
    * @param string $file The font file
-   * @return Font_TrueType $file
+   * @return Font_TrueType|null $file
    */
   public static function load($file) {
     $header = file_get_contents($file, false, null, null, 4);
@@ -48,12 +48,15 @@ class Font {
     
     if ($class) {
       require_once dirname(__FILE__)."/".strtolower($class).".cls.php";
-      
+
+      /** @var Font_TrueType $obj */
       $obj = new $class;
       $obj->load($file);
       
       return $obj;
     }
+
+    return null;
   }
   
   static function d($str) {

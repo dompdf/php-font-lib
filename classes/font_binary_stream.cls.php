@@ -59,16 +59,21 @@ class Font_Binary_Stream {
    * Open a font file in read mode
    * 
    * @param string $filename The file name of the font to open
+   *
+   * @return bool
    */
   public function load($filename) {
     return $this->open($filename, self::modeRead);
   }
-  
+
   /**
    * Open a font file in a chosen mode
-   * 
+   *
    * @param string $filename The file name of the font to open
-   * @param string $mode The opening mode 
+   * @param string $mode     The opening mode
+   *
+   * @throws Exception
+   * @return bool
    */
   public function open($filename, $mode = self::modeRead) {
     if (!in_array($mode, array(self::modeRead, self::modeWrite, self::modeReadWrite))) {
@@ -85,11 +90,13 @@ class Font_Binary_Stream {
   public function close() {
     return fclose($this->f) != false;
   }
-  
+
   /**
    * Change the internal file pointer
-   * 
+   *
    * @param resource $fp
+   *
+   * @throws Exception
    */
   public function setFile($fp) {
     if (!is_resource($fp)) {
@@ -98,10 +105,12 @@ class Font_Binary_Stream {
     
     $this->f = $fp;
   }
-  
+
   /**
    * Create a temporary file in write mode
-   * 
+   *
+   * @param bool $allow_memory Allow in-memory files
+   *
    * @return resource the temporary file pointer resource
    */
   public static function getTempFile($allow_memory = true) {
@@ -123,6 +132,7 @@ class Font_Binary_Stream {
    * Move the internal file pinter to $offset bytes
    * 
    * @param int $offset
+   *
    * @return bool True if the $offset position exists in the file
    */
   public function seek($offset) {
@@ -143,12 +153,18 @@ class Font_Binary_Stream {
   }
   
   public function read($n) {
-    if ($n < 1) return "";
+    if ($n < 1) {
+      return "";
+    }
+
     return fread($this->f, $n);
   }
-  
+
   public function write($data, $length = null) {
-    if ($data === null || $data === "") return;
+    if ($data === null || $data === "") {
+      return 0;
+    }
+    
     return fwrite($this->f, $data, $length);
   }
 
@@ -276,6 +292,7 @@ class Font_Binary_Stream {
    * Read a data of type $type in the file from the current position
    * 
    * @param mixed $type The data type to read
+   *
    * @return mixed The data that was read
    */
   public function r($type) {
@@ -305,6 +322,8 @@ class Font_Binary_Stream {
           }
           return $ret;
         }
+
+        return null;
     }
   }
   
@@ -313,6 +332,7 @@ class Font_Binary_Stream {
    * 
    * @param mixed $type The data type to write
    * @param mixed $data The data to write
+   *
    * @return int The number of bytes read
    */
   public function w($type, $data) {
@@ -342,6 +362,8 @@ class Font_Binary_Stream {
           }
           return $ret;
         }
+
+        return null;
     }
   }
   
@@ -349,6 +371,7 @@ class Font_Binary_Stream {
    * Converts a Uint32 value to string
    * 
    * @param int $uint32
+   *
    * @return string The string
    */
   public function convertUInt32ToStr($uint32) {

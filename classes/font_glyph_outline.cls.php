@@ -43,23 +43,24 @@ class Font_Glyph_Outline extends Font_Binary_Stream {
   public $yMax;
   
   public $raw;
-  
+
   /**
+   * @param Font_Table_glyf $table
+   * @param                 $offset
+   * @param                 $size
+   *
    * @return Font_Glyph_Outline
    */
   static function init(Font_Table_glyf $table, $offset, $size) {
     $font = $table->getFont();
     $font->seek($offset);
     
-    /**
-     * @var Font_Glyph_Outline
-     */
-    $glyph;
-    
     if ($font->readInt16() > -1) {
+      /** @var Font_Glyph_Outline_Simple $glyph */
       $glyph = new Font_Glyph_Outline_Simple($table, $offset, $size);
     }
     else {
+      /** @var Font_Glyph_Outline_Composite $glyph */
       $glyph = new Font_Glyph_Outline_Composite($table, $offset, $size);
     }
     

@@ -250,6 +250,8 @@ class Font_TrueType extends Font_Binary_Stream {
     if ($subtable) {
       return $subtable["glyphIndexArray"];
     }
+
+    return null;
   }
   
   function lookupGlyph($gid, &$gids, &$newGlyphOffsets, $glyfOffset, $indexToLoc, $gidToCid) {
@@ -386,7 +388,8 @@ class Font_TrueType extends Font_Binary_Stream {
     $n = 16;// @todo
     
     Font::d("Tables : ".implode(", ", $tags));
-    
+
+    /** @var Font_Table_Directory_Entry[] $entries */
     $entries = array();
     foreach($tags as $tag) {
       if (!isset($this->directory[$tag])) {
@@ -432,6 +435,7 @@ class Font_TrueType extends Font_Binary_Stream {
     $class = get_class($this)."_Table_Directory_Entry";
     
     for($i = 0; $i < $this->header->data["numTables"]; $i++) {
+      /** @var Font_Table_Directory_Entry $entry */
       $entry = new $class($this);
       $entry->parse();
       
@@ -460,7 +464,8 @@ class Font_TrueType extends Font_Binary_Stream {
     else {
       $class = "Font_Table";
     }
-    
+
+    /** @var Font_Table $table */
     $table = new $class($this->directory[$tag]);
     $table->parse();
     
