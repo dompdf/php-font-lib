@@ -12,6 +12,7 @@ require_once dirname(__FILE__)."/font_glyph_outline.cls.php";
  * `glyf` font table.
  * 
  * @package php-font-lib
+ * @property Font_Glyph_Outline[] $data
  */
 class Font_Table_glyf extends Font_Table {
   protected function _parse(){
@@ -30,6 +31,18 @@ class Font_Table_glyf extends Font_Table {
     }
     
     $this->data = $data;
+  }
+
+  public function getGlyphIDs($gids = array()){
+    $glyphIDs = array();
+
+    foreach ($this->data as $_gid => $_glyph) {
+      if (in_array($_gid, $gids) && $_glyph instanceof Font_Glyph_Outline_Composite) {
+        $glyphIDs = array_merge($glyphIDs, $_glyph->getGlyphIDs());
+      }
+    }
+
+    return array_merge($gids, $glyphIDs);
   }
     
   public function toHTML(){
@@ -58,9 +71,12 @@ class Font_Table_glyf extends Font_Table {
       $height = round($height/$ratio);
     }
     
-    $n = 100;
+    $n = 500;
     
-    $s = "<h3>Only the first $n simple glyphs are shown</h3>
+    $s = "<h3>"."Only the first $n simple glyphs are shown (".count($this->data)." total)
+    <div class='glyph-view simple'>Simple glyph</div>
+    <div class='glyph-view composite'>Composite glyph</div>
+    </h3>
     <script>
       Glyph.ratio = $ratio; 
       Glyph.head  = $head_json;
@@ -69,14 +85,14 @@ class Font_Table_glyf extends Font_Table {
     </script>";
     
     foreach($this->data as $g => $glyph) {
-      if (!$glyph instanceof Font_Glyph_Outline_Simple) {
+      /*if (!$glyph instanceof Font_Glyph_Outline_Simple) {
         continue;
-      }
+      }*/
       
       if ($n-- <= 0) {
         break;
       }
-      
+
       $glyph->parseData();
       
       $shape = array(
@@ -87,12 +103,13 @@ class Font_Table_glyf extends Font_Table {
         "yMax" => $glyph->yMax,
       );
       $shape_json = json_encode($shape);
-    
+
+      $type = ($glyph instanceof Font_Glyph_Outline_Simple ? "simple" : "composite");
       $char = isset($glyphIndexArray[$g]) ? $glyphIndexArray[$g] : 0;
       $name = isset($names[$g]) ? $names[$g] : sprintf("uni%04x", $char);
       $char = $char ? "&#{$glyphIndexArray[$g]};" : "";
       
-      $s .= "<div class='glyph-view'>
+      $s .= "<div"." class='glyph-view $type'>
               <span class='glyph-id'>$g</span> 
               <span class='char'>$char</span>
               <span class='char-name'>$name</span>
@@ -109,7 +126,6 @@ class Font_Table_glyf extends Font_Table {
   protected function _encode() {
     $font = $this->getFont();
     $subset = $font->getSubset();
-    $compoundGlyphOffsets = $font->compound_glyph_offsets;
     $data = $this->data;
     
     $loca = array();
@@ -117,16 +133,7 @@ class Font_Table_glyf extends Font_Table {
     $length = 0;
     foreach($subset as $gid) {
       $loca[] = $length;
-      $glyph = $data[$gid];
-      
-      if ($glyph instanceof Font_Glyph_Outline_Composite && isset($compoundGlyphOffsets[$gid])) {
-        $offsets = $compoundGlyphOffsets[$gid];
-        foreach($offsets as $offset => $newGid) {
-          list($glyph->raw[$offset], $glyph->raw[$offset+1]) = pack("n", $newGid);
-        }
-      }
-      
-      $length += $glyph->encode();
+      $length += $data[$gid]->encode();
     }
     
     $loca[] = $length; // dummy loca

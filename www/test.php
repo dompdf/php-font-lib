@@ -50,7 +50,7 @@ foreach($values as $value) {
 }*/
 
 // font RW
-$filename = "../fonts/DejaVuSans.ttf";
+$filename = "../fonts/Norasi.ttf";
 $filename_out = "$filename.2.ttf";
 
 Font::$debug = true;
@@ -58,7 +58,7 @@ $font = Font::load($filename);
 $font->parse();
 
 
-$font->setSubset(utf8_encode("I am a test string with unicode chars éèàçîïö` and number 12496"));
+$font->setSubset("I am a test string with unicode chars éèàçîïö` and number 12496");
 $font->reduce();
 
 $font->open($filename_out, Font_Binary_Stream::modeWrite);

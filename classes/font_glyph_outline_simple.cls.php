@@ -165,6 +165,7 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
           break;
         
         // closePath
+        /** @noinspection PhpMissingBreakStatementInspection */
         case "z":
           $points[count($points)-1]["endOfContour"] = true;
         

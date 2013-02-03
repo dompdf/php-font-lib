@@ -34,7 +34,6 @@ class Font_TrueType extends Font_Binary_Stream {
   protected $glyph_subset = array();
   
   public $glyph_all = array();
-  public $compound_glyph_offsets = array();
   
   static $nameIdCodes = array(
     0  => "Copyright",
@@ -254,64 +253,12 @@ class Font_TrueType extends Font_Binary_Stream {
     return null;
   }
   
-  function lookupGlyph($gid, &$gids, &$newGlyphOffsets, $glyfOffset, $indexToLoc, $gidToCid) {
-    $this->seek($glyfOffset + $indexToLoc[$gid]);
-    
-    $numberOfContours = $this->readInt16();
-    
-    if ($numberOfContours < 0) {
-      $this->skip(8);
-      $compoundOffset = 10; // 2 + 8
-      
-      do {
-        $flags      = $this->readUInt16();
-        $compoundOffset += 2;
-        
-        $glyphIndex = $this->readUInt16();
-        $newGlyphOffsets[$compoundOffset] = $glyphIndex;
-        
-        $compoundOffset += 2;
-        
-        if (!in_array($glyphIndex, $gids) && isset($indexToLoc[$glyphIndex])) {
-          $code = $gidToCid[$glyphIndex];
-          $gids[$code] = $glyphIndex;
-        }
-        
-        $pos = $this->pos();
-        $this->lookupGlyph($glyphIndex, $gids, $newGids, $glyfOffset, $indexToLoc, $gidToCid);
-        $this->seek($pos);
-        
-        $offset = 0;
-        
-        // skip some bytes by case
-        if ($flags & Font_Glyph_Outline::ARG_1_AND_2_ARE_WORDS) {
-          $offset += 4;
-        }
-        else {
-          $offset += 2;
-        }
-        
-        if ($flags & Font_Glyph_Outline::WE_HAVE_A_SCALE) {
-          $offset += 2;
-        }
-        elseif ($flags & Font_Glyph_Outline::WE_HAVE_AN_X_AND_Y_SCALE) {
-          $offset += 4;
-        }
-        elseif ($flags & Font_Glyph_Outline::WE_HAVE_A_TWO_BY_TWO) {
-          $offset += 8;
-        }
-        
-        $this->skip($offset);
-        $compoundOffset += $offset;
-        
-      } while ($flags & Font_Glyph_Outline::MORE_COMPONENTS);
-    }
-  }
-  
   function setSubset($subset) {
     if ( !is_array($subset) ) {
       $subset = $this->utf8toUnicode($subset);
     }
+
+    $subset = array_unique($subset);
     
     $subtable = null;
     foreach($this->getData("cmap", "subtables") as $_subtable) {
@@ -333,38 +280,24 @@ class Font_TrueType extends Font_Binary_Stream {
       
       $gids[$code] = $subtable["glyphIndexArray"][$code];
     }
-    
+
     // add compound glyphs
-    $indexToLoc = $this->getData("loca");
-    $glyfOffset = $this->directory["glyf"]->offset;
-    $cidToGid   = $subtable["glyphIndexArray"];
-    $gidToCid   = array_flip($cidToGid);
-    $newGlyphOffsets = array();
-    
-    foreach($gids as $code => $gid) {
-      if ($gid === null) {
-        unset($gids[$code]);
-        continue;
-      }
-      
-      $_newGlyphOffsets = array();
-      $this->lookupGlyph($gid, $gids, $_newGlyphOffsets, $glyfOffset, $indexToLoc, $gidToCid);
-      
-      if (count($_newGlyphOffsets)) {
-        $newGlyphOffsets[$gid] = $_newGlyphOffsets;
+    /** @var Font_Table_glyf $glyf */
+    $glyf = $this->getTableObject("glyf");
+    $gids = $glyf->getGlyphIDs($gids);
+
+    $gids_from_codes = array(
+      0 => 0 // Required glyph
+    );
+    foreach ($subtable["glyphIndexArray"] as $code => $gid) {
+      if (in_array($gid, $gids)) {
+        $gids_from_codes[$code] = $gid;
       }
     }
-    
-    ksort($gids);
-    
-    foreach($newGlyphOffsets as $_gid => $compoundOffsets) {
-      foreach($compoundOffsets as $offset => $gid) {
-        $newGlyphOffsets[$_gid][$offset] = array_search($gid, array_values($gids));
-      }
-    }
-    
-    $this->compound_glyph_offsets = $newGlyphOffsets;
-    $this->glyph_subset = $gids;
+
+    ksort($gids_from_codes);
+
+    $this->glyph_subset = $gids_from_codes;
     $this->glyph_all = $subtable["glyphIndexArray"];
   }
   
@@ -457,7 +390,8 @@ class Font_TrueType extends Font_Binary_Stream {
       if (!isset($this->directory[$tag]) || !file_exists($class_file)) {
         return;
       }
-      
+
+      /** @noinspection PhpIncludeInspection */
       require_once $class_file;
       $class = "Font_Table_$name_canon";
     }

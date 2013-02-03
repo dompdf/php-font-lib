@@ -47,6 +47,7 @@ class Font {
     }
     
     if ($class) {
+      /** @noinspection PhpIncludeInspection */
       require_once dirname(__FILE__)."/".strtolower($class).".cls.php";
 
       /** @var Font_TrueType $obj */

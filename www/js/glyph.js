@@ -21,13 +21,14 @@ var Glyph = {
     
     var l = p.length;
     var i = 0;
+
+    ctx.beginPath();
     
     while(i < l) {
       var v = p[i];
       
       switch(v) {
-        case "M": 
-          ctx.beginPath();
+        case "M":
           ctx.moveTo(p[++i], p[++i]); 
           break;
           
@@ -39,9 +40,7 @@ var Glyph = {
           ctx.quadraticCurveTo(p[++i], p[++i], p[++i], p[++i]);
           break;
           
-        case "z": 
-          ctx.closePath(); 
-          ctx.fill();
+        case "z":
           i++;
           break;
         
@@ -49,6 +48,9 @@ var Glyph = {
           i++;
       }
     }
+
+    ctx.fill();
+    ctx.closePath();
   },
   
   drawHorizLine: function(ctx, y, color) {
@@ -124,7 +126,7 @@ var Glyph = {
     ctx.stroke();
     
     ctx.strokeStyle = "black";
-    ctx.globalCompositeOperation = "xor";
+    //ctx.globalCompositeOperation = "xor";
     
     Glyph.drawSVGContours(ctx, shape.SVGContours);
   }

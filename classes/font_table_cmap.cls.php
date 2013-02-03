@@ -123,7 +123,7 @@ class Font_Table_cmap extends Font_Table {
     $j = $i+1;
     $prevCode = 0;
     $glyphIndexArray = array();
-    
+
     foreach($subset as $code => $gid) {
       if ($prevCode + 1 != $code) {
         $i++;
@@ -131,7 +131,7 @@ class Font_Table_cmap extends Font_Table {
       }
       
       $segments[$i][] = array($code, $j);
-      
+
       $glyphIndexArray[] = $code;
       $j++;
       $prevCode = $code;
@@ -193,7 +193,7 @@ class Font_Table_cmap extends Font_Table {
       "numberSubtables" => count($subtables),
       "subtables"       => $subtables,
     );
-    
+
     $length = $font->pack(self::$header_format, $data);
     
     $subtable_headers_size = $data["numberSubtables"] * 8; // size of self::$subtable_header_format
@@ -210,7 +210,7 @@ class Font_Table_cmap extends Font_Table {
       
       $before_subheader = $font->pos();
       $length += $font->pack(self::$subtable_v4_format, $subtable);
-      
+
       $segCount = $subtable["segCount"];
       $length += $font->w(array(self::uint16, $segCount), $subtable["endCode"]);
       $length += $font->writeUInt16(0); // reservedPad

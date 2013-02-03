@@ -80,6 +80,10 @@ hr {
   text-align: center;
 }
 
+.glyph-view.composite {
+  background: #bbe;
+}
+
 .glyph-view span {
   display: inline-block;
   padding: 1px;
