@@ -68,7 +68,7 @@ class Font_EOT_Header extends Font_Header {
     $size = $font->readUInt16();
 
     $this->data["{$name}Size"] = $size;
-    $this->data[$name] = $font->read($size);
+    $this->data[$name] = Font::UTF16ToUTF8($font->read($size));
   }
 
   public function encode(){

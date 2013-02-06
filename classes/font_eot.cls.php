@@ -39,15 +39,20 @@ class Font_EOT extends Font_TrueType {
 
     // TODO
   }
-  
-  public function readUInt16() {
-    $a = unpack('vv', $this->read(2));
-    return $a['v'];
-  }
 
-  public function readUInt32() {
-    $a = unpack('VV', $this->read(4));
-    return $a['V'];
+  /**
+   * Little endian version of the read method
+   */
+  public function read($n) {
+    if ($n < 1) {
+      return "";
+    }
+
+    $string = fread($this->f, $n);
+    $chunks = str_split($string, 2);
+    $chunks = array_map("strrev", $chunks);
+
+    return implode("", $chunks);
   }
 
   /**
