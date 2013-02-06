@@ -52,11 +52,11 @@ class Adobe_Font_Metrics {
     
     $records = $font->getData("name", "records");
     foreach($records as $id => $record) {
-      if (!isset(Font_TrueType::$nameIdCodes[$id]) || preg_match("/[\r\n]/", $record->string)) {
+      if (!isset(Font_Table_name::$nameIdCodes[$id]) || preg_match("/[\r\n]/", $record->string)) {
         continue;
       }
       
-      $this->addPair(Font_TrueType::$nameIdCodes[$id], $record->string);
+      $this->addPair(Font_Table_name::$nameIdCodes[$id], $record->string);
     }
     
     $os2 = $font->getData("OS/2");

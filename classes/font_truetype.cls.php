@@ -35,97 +35,6 @@ class Font_TrueType extends Font_Binary_Stream {
   
   public $glyph_all = array();
   
-  static $nameIdCodes = array(
-    0  => "Copyright",
-    1  => "FontName",
-    2  => "FontSubfamily",
-    3  => "UniqueID",
-    4  => "FullName",
-    5  => "Version",
-    6  => "PostScriptName",
-    7  => "Trademark",
-    8  => "Manufacturer",
-    9  => "Designer",
-    10 => "Description",
-    11 => "FontVendorURL",
-    12 => "FontDesignerURL",
-    13 => "LicenseDescription",
-    14 => "LicenseURL",
- // 15
-    16 => "PreferredFamily",
-    17 => "PreferredSubfamily",
-    18 => "CompatibleFullName",
-    19 => "SampleText",
-  );
-  
-  static $platforms = array(
-    0 => "Unicode",
-    1 => "Macintosh",
- // 2 =>  Reserved
-    3 => "Microsoft",
-  );
-  
-  static $plaformSpecific = array(
-    // Unicode
-    0 => array(
-      0 => "Default semantics",
-      1 => "Version 1.1 semantics",
-      2 => "ISO 10646 1993 semantics (deprecated)",
-      3 => "Unicode 2.0 or later semantics",
-    ),
-    
-    // Macintosh
-    1 => array(
-      0 => "Roman",
-      1 => "Japanese",
-      2 => "Traditional Chinese",
-      3 => "Korean",
-      4 => "Arabic",  
-      5 => "Hebrew",  
-      6 => "Greek", 
-      7 => "Russian", 
-      8 => "RSymbol", 
-      9 => "Devanagari",  
-      10 => "Gurmukhi",  
-      11 => "Gujarati",  
-      12 => "Oriya", 
-      13 => "Bengali", 
-      14 => "Tamil", 
-      15 => "Telugu",
-      16 => "Kannada",
-      17 => "Malayalam",
-      18 => "Sinhalese",
-      19 => "Burmese",
-      20 => "Khmer",
-      21 => "Thai",
-      22 => "Laotian",
-      23 => "Georgian",
-      24 => "Armenian",
-      25 => "Simplified Chinese",
-      26 => "Tibetan",
-      27 => "Mongolian",
-      28 => "Geez",
-      29 => "Slavic",
-      30 => "Vietnamese",
-      31 => "Sindhi",
-    ),
-    
-    // Microsoft
-    3 => array(
-      0 => "Symbol",
-      1 => "Unicode BMP (UCS-2)",
-      2 => "ShiftJIS",
-      3 => "PRC",
-      4 => "Big5",
-      5 => "Wansung",
-      6 => "Johab",
-  //  7 => Reserved
-  //  8 => Reserved
-  //  9 => Reserved
-      10 => "Unicode UCS-4",
-    ),
-  );
-  
   static $macCharNames = array(
     ".notdef", ".null", "CR",
     "space", "exclam", "quotedbl", "numbersign",
@@ -364,6 +273,10 @@ class Font_TrueType extends Font_Binary_Stream {
     if (!empty($this->directory)) {
       return;
     }
+
+    if (empty($this->header->data["numTables"])) {
+      return;
+    }
     
     $class = get_class($this)."_Table_Directory_Entry";
     
@@ -405,7 +318,12 @@ class Font_TrueType extends Font_Binary_Stream {
     
     $this->data[$tag] = $table;
   }
-  
+
+  /**
+   * @param $name
+   *
+   * @return Font_Table
+   */
   public function getTableObject($name) {
     return $this->data[$name];
   }
@@ -441,12 +359,103 @@ class Font_TrueType extends Font_Binary_Stream {
     $afm = new Adobe_Font_Metrics($this);
     $afm->write($file, $encoding);
   }
+
+  /**
+   * Get a specific name table string value from its ID
+   *
+   * @param int $nameID The name ID
+   *
+   * @return string|null
+   */
+  function getNameTableString($nameID) {
+    /** @var Font_Table_name_Record[] $records */
+    $records = $this->getData("name", "records");
+
+    if (!isset($records[$nameID])) {
+      return null;
+    }
+
+    return $records[$nameID]->string;
+  }
+
+  /**
+   * Get font copyright
+   *
+   * @return string|null
+   */
+  function getFontCopyright(){
+    return $this->getNameTableString(Font_Table_name::NAME_COPYRIGHT);
+  }
+
+  /**
+   * Get font name
+   *
+   * @return string|null
+   */
+  function getFontName(){
+    return $this->getNameTableString(Font_Table_name::NAME_NAME);
+  }
+
+  /**
+   * Get font subfamily
+   *
+   * @return string|null
+   */
+  function getFontSubfamily(){
+    return $this->getNameTableString(Font_Table_name::NAME_SUBFAMILY);
+  }
+
+  /**
+   * Get font subfamily ID
+   *
+   * @return string|null
+   */
+  function getFontSubfamilyID(){
+    return $this->getNameTableString(Font_Table_name::NAME_SUBFAMILY_ID);
+  }
+
+  /**
+   * Get font full name
+   *
+   * @return string|null
+   */
+  function getFontFullName(){
+    return $this->getNameTableString(Font_Table_name::NAME_FULL_NAME);
+  }
+
+  /**
+   * Get font version
+   *
+   * @return string|null
+   */
+  function getFontVersion(){
+    return $this->getNameTableString(Font_Table_name::NAME_VERSION);
+  }
+
+  /**
+   * Get font Postscript name
+   *
+   * @return string|null
+   */
+  function getFontPostscriptName(){
+    return $this->getNameTableString(Font_Table_name::NAME_POSTSCRIPT_NAME);
+  }
   
   function reduce(){
-    $names_to_keep = array(0, 1, 2, 3, 4, 5, 6);
+    $names_to_keep = array(
+      Font_Table_name::NAME_COPYRIGHT,
+      Font_Table_name::NAME_NAME,
+      Font_Table_name::NAME_SUBFAMILY,
+      Font_Table_name::NAME_SUBFAMILY_ID,
+      Font_Table_name::NAME_FULL_NAME,
+      Font_Table_name::NAME_VERSION,
+      Font_Table_name::NAME_POSTSCRIPT_NAME,
+    );
+
     foreach($this->data["name"]->data["records"] as $id => $rec) {
-      if (in_array($id, $names_to_keep)) continue;
-      unset($this->data["name"]->data["records"][$id]);
+      if (!in_array($id, $names_to_keep)) {
+        unset($this->data["name"]->data["records"][$id]);
+      }
     }
   }
 }

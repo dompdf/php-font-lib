@@ -93,23 +93,23 @@ else {
   $font->parse();
 
   //$font->saveAdobeFontMetrics("$fontfile.ufm");
-
-  $records = $font->getData("name", "records");
   ?>
 <span style="float: right;">
   File size: <?php echo round(filesize($fontfile) / 1024, 3); ?>KB &mdash;
   Memory: <?php echo (memory_get_peak_usage(true) / 1024); ?>KB &mdash;
   Time: <?php echo round(microtime(true) - $t, 4); ?>s
   <br />
-  <a href="make_subset.php?fontfile=<?php echo $fontfile; ?>&amp;name=<?php echo urlencode($records[3]); ?>">Make a subset of this font</a>
+  <a href="make_subset.php?fontfile=<?php echo $fontfile; ?>&amp;name=<?php echo urlencode($font->getFontSubfamilyID()); ?>">Make a subset of this font</a>
 </span>
 
-<h1><?php echo $records[3]; ?></h1>
-<h3><?php echo $records[5]; ?></h3>
+<h1><?php echo $font->getFontFullName(); ?></h1>
+<h3><?php echo $font->getFontVersion(); ?></h3>
 <hr />
 
 <div id="tabs">
   <ul>
+    <li><a href="#tabs-header">Header</a></li>
+
     <?php foreach($font->getTable() as $entry) {
       $tag = $entry->tag; 
       $data = $font->getData($tag); 
@@ -121,6 +121,8 @@ else {
     <?php } ?>
     <li><a href="#tabs-unicode-map">Unicode map</a></li>
   </ul>
+
+  <div id="tabs-header"><pre><?php echo var_export($font->header->data, true); ?></pre></div>
   
   <?php foreach($font->getTable() as $table) {
     $tag = $table->tag;
