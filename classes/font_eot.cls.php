@@ -55,6 +55,11 @@ class Font_EOT extends Font_TrueType {
     return implode("", $chunks);
   }
 
+  public function readUInt32(){
+    $uint32 = parent::readUInt32();
+    return $uint32 >> 16 & 0x0000FFFF | $uint32 << 16 & 0xFFFF0000;
+  }
+
   /**
    * Get font copyright
    *
