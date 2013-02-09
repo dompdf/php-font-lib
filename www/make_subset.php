@@ -6,7 +6,12 @@
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
-$fontfile = $_GET["fontfile"];
+$fontfile = null;
+if (isset($_GET["fontfile"])) {
+  $fontfile = basename($_GET["fontfile"]);
+  $fontfile = "../fonts/$fontfile";
+}
+
 $name     = isset($_GET["name"]) ? $_GET["name"] : null;
 
 if (isset($_POST["subset"])) {

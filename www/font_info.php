@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="css/blitzer/jquery-ui-1.8.14.custom.css" />
   <script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.8.14.custom.min.js"></script>
-  <script type="text/javascript" src="js/glyph.js?v=2"></script>
+  <script type="text/javascript" src="js/glyph.js?v=3"></script>
   <script type="text/javascript">
     $(function() {
       $("#tabs").tabs({
@@ -30,7 +30,12 @@
 
 require_once "../classes/font.cls.php";
 
-$fontfile   = @$_GET["fontfile"];
+$fontfile = null;
+if (isset($_GET["fontfile"])) {
+  $fontfile = basename($_GET["fontfile"]);
+  $fontfile = "../fonts/$fontfile";
+}
+
 $unicodemap = @$_GET["unicodemap"];
 
 $t = microtime(true);
