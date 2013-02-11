@@ -6,7 +6,7 @@
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
-require_once dirname(__FILE__)."/font_glyph_outline.cls.php";
+require_once dirname(__FILE__) . "/Font_Glyph_Outline.php";
 
 /**
  * `glyf` font table.
@@ -85,10 +85,6 @@ class Font_Table_glyf extends Font_Table {
     </script>";
     
     foreach($this->data as $g => $glyph) {
-      /*if (!$glyph instanceof Font_Glyph_Outline_Simple) {
-        continue;
-      }*/
-      
       if ($n-- <= 0) {
         break;
       }

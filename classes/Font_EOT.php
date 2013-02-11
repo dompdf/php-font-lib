@@ -6,8 +6,8 @@
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
-require_once dirname(__FILE__)."/font_truetype.cls.php";
-require_once dirname(__FILE__)."/font_eot_header.cls.php";
+require_once dirname(__FILE__) . "/Font_TrueType.php";
+require_once dirname(__FILE__) . "/Font_EOT_Header.php";
 
 /**
  * EOT font file.
@@ -15,20 +15,15 @@ require_once dirname(__FILE__)."/font_eot_header.cls.php";
  * @package php-font-lib
  */
 class Font_EOT extends Font_TrueType {
-  private $origF;
-  private $fileOffset = 0;
-
   /**
    * @var Font_EOT_Header
    */
   public $header;
-  
+
   function parseHeader(){
     if (!empty($this->header)) {
       return;
     }
-
-    $this->seek(0);
 
     $this->header = new Font_EOT_Header($this);
     $this->header->parse();

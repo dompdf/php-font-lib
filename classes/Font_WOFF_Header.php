@@ -6,7 +6,7 @@
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
-require_once dirname(__FILE__)."/font_truetype_header.cls.php";
+require_once dirname(__FILE__) . "/Font_TrueType_Header.php";
 
 /**
  * WOFF font file header.

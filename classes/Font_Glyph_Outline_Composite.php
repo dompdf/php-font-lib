@@ -4,10 +4,10 @@
  * @link    https://github.com/PhenX/php-font-lib
  * @author  Fabien Ménager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: font_table_glyf.cls.php 46 2012-04-02 20:22:38Z fabien.menager $
+ * @version $Id: Font_Table_glyf.php 46 2012-04-02 20:22:38Z fabien.menager $
  */
 
-require_once dirname(__FILE__)."/font_glyph_outline_component.cls.php";
+require_once dirname(__FILE__) . "/Font_Glyph_Outline_Component.php";
 
 /**
  * Composite glyph outline
@@ -210,17 +210,21 @@ class Font_Glyph_Outline_Composite extends Font_Glyph_Outline {
   }
 
   public function getSVGContours(){
-    $path = "";
+    $contours = array();
 
     /** @var Font_Table_glyf $glyph_data */
     $glyph_data = $this->getFont()->getTableObject("glyf");
 
+    /** @var Font_Glyph_Outline[] $glyphs */
     $glyphs = $glyph_data->data;
 
     foreach ($this->components as $component) {
-      $path .= $glyphs[$component->glyphIndex]->getSVGContours();
+      $contours[] = array(
+        "contours"  => $glyphs[$component->glyphIndex]->getSVGContours(),
+        "transform" => $component->getMatrix(),
+      );
     }
 
-    return $path;
+    return $contours;
   }
 }

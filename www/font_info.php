@@ -28,7 +28,7 @@
 <body>
 <?php 
 
-require_once "../classes/font.cls.php";
+require_once "../classes/Font.php";
 
 $fontfile = null;
 if (isset($_GET["fontfile"])) {

@@ -6,8 +6,8 @@
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
-require_once dirname(__FILE__)."/font_binary_stream.cls.php";
-require_once dirname(__FILE__)."/font_truetype.cls.php";
+require_once dirname(__FILE__) . "/Font_Binary_Stream.php";
+require_once dirname(__FILE__) . "/Font_TrueType.php";
 
 /**
  * TrueType collection font file.

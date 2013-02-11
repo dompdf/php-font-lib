@@ -6,7 +6,7 @@
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
-require_once dirname(__FILE__)."/font_table_directory_entry.cls.php";
+require_once dirname(__FILE__) . "/Font_Table_Directory_Entry.php";
 
 /**
  * TrueType table directory entry.

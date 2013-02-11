@@ -24,10 +24,10 @@ class Font_Table_Directory_Entry extends Font_Binary_Stream {
   
   public $entryLength = 4;
   
-  var $tag;
-  var $checksum;
-  var $offset;
-  var $length;
+  public $tag;
+  public $checksum;
+  public $offset;
+  public $length;
   
   protected $origF;
   

@@ -6,7 +6,7 @@
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
-require_once dirname(__FILE__)."/encoding_map.cls.php";
+require_once dirname(__FILE__) . "/Encoding_Map.php";
 
 /**
  * Adobe Font Metrics file creation utility class.

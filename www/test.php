@@ -8,8 +8,8 @@
 <pre>
 <?php 
 
-require_once "../classes/font_binary_stream.cls.php";
-require_once "../classes/font.cls.php";
+require_once "../classes/Font_Binary_Stream.php";
+require_once "../classes/Font.php";
 
 $t = microtime(true);
 

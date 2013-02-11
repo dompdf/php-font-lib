@@ -11,46 +11,68 @@ var Glyph = {
   splitPath: function(path) {
   	return path.match(/([a-z])|(-?\d+(?:\.\d+)?)/ig);
   },
-  
-  drawSVGContours: function(ctx, path) {
+
+  drawPath: function(ctx, path) {
     var p = Glyph.splitPath(path);
-    
+
     if (!p) {
       return;
     }
-    
+
     var l = p.length;
     var i = 0;
 
     ctx.beginPath();
-    
+
     while(i < l) {
       var v = p[i];
-      
+
       switch(v) {
         case "M":
-          ctx.moveTo(p[++i], p[++i]); 
+          ctx.moveTo(p[++i], p[++i]);
           break;
-          
-        case "L": 
-          ctx.lineTo(p[++i], p[++i]); 
+
+        case "L":
+          ctx.lineTo(p[++i], p[++i]);
           break;
-          
-        case "Q": 
+
+        case "Q":
           ctx.quadraticCurveTo(p[++i], p[++i], p[++i], p[++i]);
           break;
-          
+
         case "z":
           i++;
           break;
-        
-        default: 
+
+        default:
           i++;
       }
     }
 
     ctx.fill();
     ctx.closePath();
+  },
+  
+  drawSVGContours: function(ctx, contours) {
+    // Is the path
+    if (!$.isArray(contours)) {
+      Glyph.drawPath(ctx, contours);
+      return;
+    }
+
+
+    var contour, path, transform;
+
+    for (var ci = 0, cl = contours.length; ci < cl; ci++) {
+      contour = contours[ci];
+      path = contour.contours;
+      transform = contour.transform;
+
+      ctx.save();
+      ctx.transform(transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
+      Glyph.drawSVGContours(ctx, path);
+      ctx.restore();
+    }
   },
   
   drawHorizLine: function(ctx, y, color) {

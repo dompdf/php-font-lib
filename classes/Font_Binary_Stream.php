@@ -31,22 +31,6 @@ class Font_Binary_Stream {
   const longDateTime = 12;
   const char      = 13;
   
-  private static $sizes = array(
-    self::uint8     => 1,
-    self::int8      => 1,
-    self::uint16    => 2,
-    self::int16     => 2,
-    self::uint32    => 4,
-    self::int32     => 4,
-    self::shortFrac => 4,
-    self::Fixed     => 4,
-    self::FWord     => 2,
-    self::uFWord    => 2,
-    self::F2Dot14   => 2,
-    self::longDateTime => 8,
-    self::char      => 1,
-  );
-  
   const modeRead      = "rb";
   const modeWrite     = "wb";
   const modeReadWrite = "rb+";

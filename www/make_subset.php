@@ -19,7 +19,7 @@ if (isset($_POST["subset"])) {
   
   ob_start();
   
-  require_once "../classes/font.cls.php";
+  require_once "../classes/Font.php";
   
   $font = Font::load($fontfile);
   $font->parse();

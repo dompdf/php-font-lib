@@ -4,11 +4,11 @@
  * @link    https://github.com/PhenX/php-font-lib
  * @author  Fabien Ménager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: font_table_glyf.cls.php 46 2012-04-02 20:22:38Z fabien.menager $
+ * @version $Id: Font_Table_glyf.php 46 2012-04-02 20:22:38Z fabien.menager $
  */
 
-require_once dirname(__FILE__)."/font_glyph_outline_simple.cls.php";
-require_once dirname(__FILE__)."/font_glyph_outline_composite.cls.php";
+require_once dirname(__FILE__) . "/Font_Glyph_Outline_Simple.php";
+require_once dirname(__FILE__) . "/Font_Glyph_Outline_Composite.php";
 
 /**
  * `glyf` font table.
@@ -95,5 +95,9 @@ class Font_Glyph_Outline extends Font_Binary_Stream {
   function encode(){
     $font = $this->getFont();
     return $font->write($this->raw, strlen($this->raw));
+  }
+
+  function getSVGContours() {
+    // Inherit
   }
 }

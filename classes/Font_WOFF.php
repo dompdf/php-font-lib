@@ -6,14 +6,16 @@
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
-require_once dirname(__FILE__)."/font_truetype.cls.php";
-require_once dirname(__FILE__)."/font_woff_table_directory_entry.cls.php";
-require_once dirname(__FILE__)."/font_woff_header.cls.php";
+require_once dirname(__FILE__) . "/Font_TrueType.php";
+require_once dirname(__FILE__) . "/Font_WOFF_Table_Directory_Entry.php";
+require_once dirname(__FILE__) . "/Font_WOFF_Header.php";
 
 /**
  * WOFF font file.
  * 
  * @package php-font-lib
+ *
+ * @property Font_WOFF_Table_Directory_Entry[] $directory
  */
 class Font_WOFF extends Font_TrueType {
   function parseHeader(){
@@ -42,7 +44,7 @@ class Font_WOFF extends Font_TrueType {
       $this->f = $fr;
       $this->seek($entry->offset);
       $data = $this->read($entry->length);
-      
+
       if ($entry->length < $entry->origLength) {
         $data = gzuncompress($data);
       }
@@ -51,7 +53,7 @@ class Font_WOFF extends Font_TrueType {
       $length = strlen($data);
       $entry->length = $entry->origLength = $length;
       $entry->offset = $dataOffset;
-      
+
       // Write ...
       $this->f = $fw;
       

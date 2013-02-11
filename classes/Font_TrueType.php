@@ -7,11 +7,11 @@
  */
 
 $dir = dirname(__FILE__);
-require_once "$dir/font_binary_stream.cls.php";
-require_once "$dir/font_truetype_table_directory_entry.cls.php";
-require_once "$dir/font_truetype_header.cls.php";
-require_once "$dir/font_table.cls.php";
-require_once "$dir/adobe_font_metrics.cls.php";
+require_once "$dir/Font_Binary_Stream.php";
+require_once "$dir/Font_TrueType_Table_Directory_Entry.php";
+require_once "$dir/Font_TrueType_Header.php";
+require_once "$dir/Font_Table.php";
+require_once "$dir/Adobe_Font_Metrics.php";
 
 /**
  * TrueType font file.
@@ -298,7 +298,7 @@ class Font_TrueType extends Font_Binary_Stream {
     
     if (!self::$raw) {
       $name_canon = preg_replace("/[^a-z0-9]/", "", strtolower($tag));
-      $class_file = dirname(__FILE__)."/font_table_$name_canon.cls.php";
+      $class_file = dirname(__FILE__)."/Font_Table_$name_canon.php";
       
       if (!isset($this->directory[$tag]) || !file_exists($class_file)) {
         return;
