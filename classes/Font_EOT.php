@@ -15,6 +15,14 @@ require_once dirname(__FILE__) . "/Font_EOT_Header.php";
  * @package php-font-lib
  */
 class Font_EOT extends Font_TrueType {
+  const TTEMBED_SUBSET                   = 0x00000001;
+  const TTEMBED_TTCOMPRESSED             = 0x00000004;
+  const TTEMBED_FAILIFVARIATIONSIMULATED = 0x00000010;
+  const TTMBED_EMBEDEUDC                 = 0x00000020;
+  const TTEMBED_VALIDATIONTESTS          = 0x00000040; // Deprecated
+  const TTEMBED_WEBOBJECT                = 0x00000080;
+  const TTEMBED_XORENCRYPTDATA           = 0x10000000;
+
   /**
    * @var Font_EOT_Header
    */
@@ -32,7 +40,28 @@ class Font_EOT extends Font_TrueType {
   function parse() {
     $this->parseHeader();
 
-    // TODO
+    $flags = $this->header->data["Flags"];
+
+    if ($flags & self::TTEMBED_TTCOMPRESSED) {
+      $mtx_version    = $this->readUInt8();
+      $mtx_copy_limit = $this->readUInt8() << 16 | $this->readUInt8() << 8 | $this->readUInt8();
+      $mtx_offset_1   = $this->readUInt8() << 16 | $this->readUInt8() << 8 | $this->readUInt8();
+      $mtx_offset_2   = $this->readUInt8() << 16 | $this->readUInt8() << 8 | $this->readUInt8();
+
+      /*
+      var_dump("$mtx_version $mtx_copy_limit $mtx_offset_1 $mtx_offset_2");
+
+      $pos = $this->pos();
+      $size = $mtx_offset_1 - $pos;
+      var_dump("pos: $pos");
+      var_dump("size: $size");*/
+    }
+
+    if ($flags & self::TTEMBED_XORENCRYPTDATA) {
+      // Process XOR
+    }
+
+    // TODO Read font data ...
   }
 
   /**
@@ -70,7 +99,7 @@ class Font_EOT extends Font_TrueType {
    * @return string|null
    */
   function getFontName(){
-    return $this->header->data["FullName"];
+    return $this->header->data["FamilyName"];
   }
 
   /**
@@ -79,7 +108,7 @@ class Font_EOT extends Font_TrueType {
    * @return string|null
    */
   function getFontSubfamily(){
-    return $this->header->data["FamilyName"];
+    return $this->header->data["StyleName"];
   }
 
   /**
@@ -88,7 +117,7 @@ class Font_EOT extends Font_TrueType {
    * @return string|null
    */
   function getFontSubfamilyID(){
-    return $this->header->data["FamilyName"];
+    return $this->header->data["StyleName"];
   }
 
   /**
@@ -107,6 +136,15 @@ class Font_EOT extends Font_TrueType {
    */
   function getFontVersion(){
     return $this->header->data["VersionName"];
+  }
+
+  /**
+   * Get font weight
+   *
+   * @return string|null
+   */
+  function getFontWeight(){
+    return $this->header->data["Weight"];
   }
 
   /**

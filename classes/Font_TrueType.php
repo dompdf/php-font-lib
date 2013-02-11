@@ -433,6 +433,15 @@ class Font_TrueType extends Font_Binary_Stream {
   }
 
   /**
+   * Get font weight
+   *
+   * @return string|null
+   */
+  function getFontWeight(){
+    return $this->getTableObject("OS/2")->data["usWeightClass"];
+  }
+
+  /**
    * Get font Postscript name
    *
    * @return string|null

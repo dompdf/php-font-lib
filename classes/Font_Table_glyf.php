@@ -76,12 +76,15 @@ class Font_Table_glyf extends Font_Table {
     $s = "<h3>"."Only the first $n simple glyphs are shown (".count($this->data)." total)
     <div class='glyph-view simple'>Simple glyph</div>
     <div class='glyph-view composite'>Composite glyph</div>
+    Zoom: <input type='range' value='100' max='400' onchange='Glyph.resize(this.value)' />
     </h3>
     <script>
-      Glyph.ratio = $ratio; 
-      Glyph.head  = $head_json;
-      Glyph.os2   = $os2_json;
-      Glyph.hmtx  = $hmtx_json;
+      Glyph.ratio  = $ratio;
+      Glyph.head   = $head_json;
+      Glyph.os2    = $os2_json;
+      Glyph.hmtx   = $hmtx_json;
+      Glyph.width  = $width;
+      Glyph.height = $height;
     </script>";
     
     foreach($this->data as $g => $glyph) {
@@ -112,7 +115,7 @@ class Font_Table_glyf extends Font_Table {
               <br />
               <canvas width='$width' height='$height' id='glyph-$g'></canvas>
             </div>
-            <script>Glyph.draw(\$('#glyph-$g'), $shape_json, $g)</script>";
+            <script>Glyph.glyphs.push([$g,$shape_json]);</script>";
     }
     
     return $s;

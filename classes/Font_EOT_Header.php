@@ -16,14 +16,6 @@ require_once dirname(__FILE__) . "/Font_Header.php";
  * @property Font_EOT $font
  */
 class Font_EOT_Header extends Font_Header {
-  const TTEMBED_SUBSET                   = 0x00000001;
-  const TTEMBED_TTCOMPRESSED             = 0x00000004;
-  const TTEMBED_FAILIFVARIATIONSIMULATED = 0x00000010;
-  const TTMBED_EMBEDEUDC                 = 0x00000020;
-  const TTEMBED_VALIDATIONTESTS          = 0x00000040; // Deprecated
-  const TTEMBED_WEBOBJECT                = 0x00000080;
-  const TTEMBED_XORENCRYPTDATA           = 0x10000000;
-
   protected $def = array(
     "format"        => self::uint32,
     "numTables"     => self::uint16,
@@ -102,21 +94,6 @@ class Font_EOT_Header extends Font_Header {
     if (!empty($this->data["RootString"])) {
       $this->data["RootString"] = explode("\0", $this->data["RootString"]);
     }
-
-    $flags = $this->data["Flags"];
-
-    if ($flags & self::TTEMBED_TTCOMPRESSED) {
-      $mtx_version    = $font->readUInt8();
-      $mtx_copy_limit = $font->readUInt8() << 16 | $font->readUInt8() << 8 | $font->readUInt8();
-      $mtx_offset_1   = $font->readUInt8() << 16 | $font->readUInt8() << 8 | $font->readUInt8();
-      $mtx_offset_2   = $font->readUInt8() << 16 | $font->readUInt8() << 8 | $font->readUInt8();
-    }
-
-    if ($flags & self::TTEMBED_XORENCRYPTDATA) {
-      // Process XOR
-    }
-
-    // TODO Read font data ...
   }
 
   private function readString($name) {

@@ -255,6 +255,10 @@ class Font_Glyph_Outline_Simple extends Font_Glyph_Outline {
     $path = "";
     
     if (!$points) {
+      if (empty($this->points)) {
+        $this->parseData();
+      }
+
       $points = $this->points;
     }
     
