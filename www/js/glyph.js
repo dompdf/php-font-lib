@@ -1,12 +1,12 @@
 var Glyph = {
+  glyphs: [],
   ratio: null, 
   head:  null, 
   os2:   null, 
-  hmtx:  null, 
-  
-  midValue: function (a, b){
-    return a + (b - a)/2;
-  },
+  hmtx:  null,
+  width: null,
+  height: null,
+  scale: 1.0,
   
   splitPath: function(path) {
   	return path.match(/([a-z])|(-?\d+(?:\.\d+)?)/ig);
@@ -60,7 +60,6 @@ var Glyph = {
       return;
     }
 
-
     var contour, path, transform;
 
     for (var ci = 0, cl = contours.length; ci < cl; ci++) {
@@ -88,14 +87,16 @@ var Glyph = {
     var element  = canvas[0];
     var ctx      = element.getContext("2d");
     var ratio    = Glyph.ratio;
-    Glyph.width  = element.width;
-    Glyph.height = element.height;
-    
-    ctx.lineWidth = ratio;
+    var width    = Glyph.width  * Glyph.scale;
+    var height   = Glyph.height * Glyph.scale;
+    ctx.clearRect(0, 0, width, height);
+
+    ctx.lineWidth = ratio / Glyph.scale;
     
     // Invert axis
-    ctx.translate(0, Glyph.height);
+    ctx.translate(0, height);
     ctx.scale(1/ratio, -(1/ratio));
+    ctx.scale(Glyph.scale, Glyph.scale);
     
     ctx.translate(0, -Glyph.head.yMin);
     
@@ -114,7 +115,7 @@ var Glyph = {
       var s = ratio*3;
       
       ctx.strokeStyle = "rgba(0,0,0,0.5)";
-      ctx.lineWidth = ratio * 1.5;
+      ctx.lineWidth = (ratio * 1.5) / Glyph.scale;
       
       // origin
       ctx.beginPath();
@@ -151,5 +152,24 @@ var Glyph = {
     //ctx.globalCompositeOperation = "xor";
     
     Glyph.drawSVGContours(ctx, shape.SVGContours);
+  },
+  drawAll: function(){
+    $.each(Glyph.glyphs, function(i, g){
+      Glyph.draw($('#glyph-'+g[0]), g[1], g[0]);
+    });
+  },
+  resize: function(value){
+    Glyph.scale = value / 100;
+
+    $.each(document.getElementsByTagName('canvas'), function(i, canvas){
+      canvas.height = Glyph.height * Glyph.scale;
+      canvas.width  = Glyph.width  * Glyph.scale;
+    });
+
+    Glyph.drawAll();
   }
 };
+
+$(function(){
+  Glyph.drawAll();
+});
