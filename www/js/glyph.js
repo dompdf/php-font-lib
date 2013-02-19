@@ -155,7 +155,7 @@ var Glyph = {
   },
   drawAll: function(){
     $.each(Glyph.glyphs, function(i, g){
-      Glyph.draw($('#glyph-'+g[0]), g[1], g[0]);
+      Glyph.draw($('#glyph-canvas-'+g[0]), g[1], g[0]);
     });
   },
   resize: function(value){

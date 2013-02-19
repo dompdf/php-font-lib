@@ -169,45 +169,34 @@ class Font_TrueType extends Font_Binary_Stream {
 
     $subset = array_unique($subset);
     
-    $subtable = null;
-    foreach($this->getData("cmap", "subtables") as $_subtable) {
-      if ($_subtable["platformID"] == 0 || $_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1) {
-        $subtable = $_subtable;
-        break;
-      }
-    }
+    $glyphIndexArray = $this->getUnicodeCharMap();
     
-    if (!$subtable) return;
+    if (!$glyphIndexArray) {
+      return;
+    }
     
     $gids = array(
-      0 => 0 // Required glyph
+      0, // .notdef
+      1, // .null
     );
+
     foreach($subset as $code) {
-      if (!isset($subtable["glyphIndexArray"][$code])) {
+      if (!isset($glyphIndexArray[$code])) {
         continue;
       }
-      
-      $gids[$code] = $subtable["glyphIndexArray"][$code];
+
+      $gid = $glyphIndexArray[$code];
+      $gids[$gid] = $gid;
     }
 
-    // add compound glyphs
     /** @var Font_Table_glyf $glyf */
     $glyf = $this->getTableObject("glyf");
     $gids = $glyf->getGlyphIDs($gids);
 
-    $gids_from_codes = array(
-      0 => 0 // Required glyph
-    );
-    foreach ($subtable["glyphIndexArray"] as $code => $gid) {
-      if (in_array($gid, $gids)) {
-        $gids_from_codes[$code] = $gid;
-      }
-    }
+    sort($gids);
 
-    ksort($gids_from_codes);
-
-    $this->glyph_subset = $gids_from_codes;
-    $this->glyph_all = $subtable["glyphIndexArray"];
+    $this->glyph_subset = $gids;
+    $this->glyph_all = array_values($glyphIndexArray); // FIXME
   }
   
   function getSubset() {
@@ -284,7 +273,7 @@ class Font_TrueType extends Font_Binary_Stream {
       /** @var Font_Table_Directory_Entry $entry */
       $entry = new $class($this);
       $entry->parse();
-      
+
       $this->directory[$entry->tag] = $entry;
     }
   }

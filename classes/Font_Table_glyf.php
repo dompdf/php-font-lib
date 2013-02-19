@@ -42,7 +42,7 @@ class Font_Table_glyf extends Font_Table {
       }
     }
 
-    return array_merge($gids, $glyphIDs);
+    return array_unique(array_merge($gids, $glyphIDs));
   }
     
   public function toHTML(){
@@ -108,12 +108,20 @@ class Font_Table_glyf extends Font_Table {
       $name = isset($names[$g]) ? $names[$g] : sprintf("uni%04x", $char);
       $char = $char ? "&#{$glyphIndexArray[$g]};" : "";
       
-      $s .= "<div"." class='glyph-view $type'>
+      $s .= "<div class='glyph-view $type' id='glyph-$g'>
               <span class='glyph-id'>$g</span> 
               <span class='char'>$char</span>
               <span class='char-name'>$name</span>
-              <br />
-              <canvas width='$width' height='$height' id='glyph-$g'></canvas>
+              ";
+
+      if ($type == "composite") {
+        foreach ($glyph->getGlyphIDs() as $_id) {
+          $s .= "<a href='#glyph-$_id' class='glyph-component-id'>$_id</a> ";
+        }
+      }
+
+      $s .= "<br />
+            <canvas width='$width' height='$height' id='glyph-canvas-$g'></canvas>
             </div>
             <script>Glyph.glyphs.push([$g,$shape_json]);</script>";
     }

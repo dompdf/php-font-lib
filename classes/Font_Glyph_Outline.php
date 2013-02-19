@@ -100,4 +100,8 @@ class Font_Glyph_Outline extends Font_Binary_Stream {
   function getSVGContours() {
     // Inherit
   }
+
+  function getGlyphIDs(){
+    // Inherit
+  }
 }
