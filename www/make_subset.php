@@ -19,7 +19,7 @@ if (!file_exists($fontfile)) {
 $name = isset($_GET["name"]) ? $_GET["name"] : null;
 
 if (isset($_POST["subset"])) {
-  $subset = utf8_encode($_POST["subset"]);
+  $subset = $_POST["subset"];
   
   ob_start();
   
