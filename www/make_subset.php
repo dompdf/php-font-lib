@@ -12,10 +12,14 @@ if (isset($_GET["fontfile"])) {
   $fontfile = "../fonts/$fontfile";
 }
 
-$name     = isset($_GET["name"]) ? $_GET["name"] : null;
+if (!file_exists($fontfile)) {
+  return;
+}
+
+$name = isset($_GET["name"]) ? $_GET["name"] : null;
 
 if (isset($_POST["subset"])) {
-  $subset = $_POST["subset"];
+  $subset = utf8_encode($_POST["subset"]);
   
   ob_start();
   
@@ -26,9 +30,12 @@ if (isset($_POST["subset"])) {
   
   $font->setSubset($subset);
   $font->reduce();
+
+  $new_filename = basename($fontfile);
+  $new_filename = substr($new_filename, 0, -4)."-subset.".substr($new_filename, -3);
   
-  header('Content-Type: font/truetype');
-  header('Content-Disposition: attachment; filename="subset.ttf"');
+  header("Content-Type: font/truetype");
+  header("Content-Disposition: attachment; filename=\"$new_filename\"");
   
   $tmp = tempnam(sys_get_temp_dir(), "fnt");
   $font->open($tmp, Font_Binary_Stream::modeWrite);
@@ -45,6 +52,8 @@ if (isset($_POST["subset"])) {
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8" />
+  <title>Subset maker</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
