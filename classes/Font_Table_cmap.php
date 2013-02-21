@@ -115,26 +115,39 @@ class Font_Table_cmap extends Font_Table {
   
   function _encode(){
     $font = $this->getFont();
+
     $subset = $font->getSubset();
+    $glyphIndexArray = $font->getUnicodeCharMap();
+
+    $newGlyphIndexArray = array();
+    foreach ($glyphIndexArray as $code => $gid) {
+      $new_gid = array_search($gid, $subset);
+      if ($new_gid !== false) {
+        $newGlyphIndexArray[$code] = $new_gid;
+      }
+    }
+
+    ksort($newGlyphIndexArray); // Sort by char code
     
     $segments = array();
-    
-    $i = count($segments)-1;
-    $j = $i+1;
-    $prevCode = 0;
-    $glyphIndexArray = array();
 
-    foreach($subset as $code => $gid) {
-      if ($prevCode + 1 != $code) {
+    $i = -1;
+    $prevCode = 0xFFFF;
+    $prevGid = 0xFFFF;
+
+    foreach($newGlyphIndexArray as $code => $gid) {
+      if (
+        $prevCode + 1 != $code ||
+        $prevGid + 1 != $gid
+      ) {
         $i++;
         $segments[$i] = array();
       }
       
-      $segments[$i][] = array($code, $j);
+      $segments[$i][] = array($code, $gid);
 
-      $glyphIndexArray[] = $code;
-      $j++;
       $prevCode = $code;
+      $prevGid = $gid;
     }
     
     $segments[][] = array(0xFFFF, 0xFFFF);
@@ -184,7 +197,7 @@ class Font_Table_cmap extends Font_Table {
         "endCode"       => $endCode,
         "idDelta"       => $idDelta,
         "idRangeOffset" => $idRangeOffset, 
-        "glyphIndexArray" => $glyphIndexArray, 
+        "glyphIndexArray" => $newGlyphIndexArray,
       )
     );
     
@@ -217,7 +230,7 @@ class Font_Table_cmap extends Font_Table {
       $length += $font->w(array(self::uint16, $segCount), $subtable["startCode"]);
       $length += $font->w(array(self::int16, $segCount), $subtable["idDelta"]);
       $length += $font->w(array(self::uint16, $segCount), $subtable["idRangeOffset"]);
-      $length += $font->w(array(self::uint16, $segCount), $subtable["glyphIndexArray"]);
+      $length += $font->w(array(self::uint16, $segCount), array_values($subtable["glyphIndexArray"]));
       
       $after_subtable = $font->pos();
       

@@ -108,3 +108,14 @@ hr {
 .glyph-view canvas {
   background: #fff;
 }
+
+.glyph-view:target {
+  outline: 2px dotted red;
+}
+.glyph-view:target canvas {
+  background: #ddffdd;
+}
+
+.glyph-view a.glyph-component-id {
+  font-size: 0.8em;
+}

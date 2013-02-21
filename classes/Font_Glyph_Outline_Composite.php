@@ -126,7 +126,7 @@ class Font_Glyph_Outline_Composite extends Font_Glyph_Outline {
   function encode(){
     $font = $this->getFont();
 
-    $gids = array_values($font->getSubset());
+    $gids = $font->getSubset();
 
     $size  = $font->writeInt16(-1);
     $size += $font->writeFWord($this->xMin);

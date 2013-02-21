@@ -8,11 +8,13 @@
 ?><!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8" />
+  <title>Font information</title>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/blitzer/jquery-ui-1.8.14.custom.css" />
   <script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.8.14.custom.min.js"></script>
-  <script type="text/javascript" src="js/glyph.js?v=4"></script>
+  <script type="text/javascript" src="js/glyph.js?v=5"></script>
   <script type="text/javascript">
     $(function() {
       $("#tabs").tabs({
