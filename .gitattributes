@@ -1,13 +1,12 @@
 *.json  text
-*.xml		text
-*.php		text
-*.LGPL	text
+*.xml   text
+*.php   text
+*.LGPL  text
 *.md    text
-*.skel 	text
+*.skel  text
 *.css   text
-*.inc		text
+*.inc   text
 *.js    text
 *.html  text
 *.txt   text
 *.svg   text
-
