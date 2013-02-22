@@ -51,7 +51,7 @@ foreach($values as $value) {
 }*/
 
 // font RW
-$filename = "../fonts/Norasi.ttf";
+$filename = "../fonts/DejaVuSansMono.ttf";
 $filename_out = "$filename.2.ttf";
 
 Font::$debug = true;
@@ -59,7 +59,7 @@ $font = Font::load($filename);
 $font->parse();
 
 
-$font->setSubset("I am a test string with unicode chars éèàçîïö` and number 12496");
+$font->setSubset("(.apbiI,mn");
 $font->reduce();
 
 $font->open($filename_out, Font_Binary_Stream::modeWrite);

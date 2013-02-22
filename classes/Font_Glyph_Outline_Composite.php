@@ -11,7 +11,7 @@ require_once dirname(__FILE__) . "/Font_Glyph_Outline_Component.php";
 
 /**
  * Composite glyph outline
- * 
+ *
  * @package php-font-lib
  */
 class Font_Glyph_Outline_Composite extends Font_Glyph_Outline {
@@ -39,6 +39,11 @@ class Font_Glyph_Outline_Composite extends Font_Glyph_Outline {
     $glyphIDs = array();
     foreach ($this->components as $_component) {
       $glyphIDs[] = $_component->glyphIndex;
+
+      $_glyph = $this->table->data[$_component->glyphIndex];
+      if ($_glyph instanceof Font_Glyph_Outline_Composite) {
+        $glyphIDs = array_merge($glyphIDs, $_glyph->getGlyphIDs());
+      }
     }
 
     return $glyphIDs;
@@ -47,7 +52,7 @@ class Font_Glyph_Outline_Composite extends Font_Glyph_Outline {
   /*function parse() {
     //$this->parseData();
   }*/
-  
+
   function parseData(){
     parent::parseData();
 
