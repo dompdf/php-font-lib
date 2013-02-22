@@ -41,9 +41,7 @@ class Font_Glyph_Outline_Composite extends Font_Glyph_Outline {
       $glyphIDs[] = $_component->glyphIndex;
 
       $_glyph = $this->table->data[$_component->glyphIndex];
-      if ($_glyph instanceof Font_Glyph_Outline_Composite) {
-        $glyphIDs = array_merge($glyphIDs, $_glyph->getGlyphIDs());
-      }
+      $glyphIDs = array_merge($glyphIDs, $_glyph->getGlyphIDs());
     }
 
     return $glyphIDs;
