@@ -4,4 +4,6 @@ This library can be used to:
  * Extract advanced info (horizontal metrics, glyph names, glyph shapes, etc)
  * Make an Adobe Font Metrics (AFM) file from a font
 
+You can find a demo GUI [http://pxd.me/php-font-lib/www/font_explorer.html](here).
+
 This project was initiated by the need to read font files in the [DOMPDF project](https://github.com/dompdf/dompdf).
