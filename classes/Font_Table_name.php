@@ -38,7 +38,7 @@ class Font_Table_name extends Font_Table {
   const NAME_PREFERRE_FAMILY    = 16;
   const NAME_PREFERRE_SUBFAMILY = 17;
   const NAME_COMPAT_FULL_NAME   = 18;
-  const NAME_SAMPLE_TEXT        = 18;
+  const NAME_SAMPLE_TEXT        = 19;
 
   static $nameIdCodes = array(
     0  => "Copyright",

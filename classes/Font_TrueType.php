@@ -11,6 +11,7 @@ require_once "$dir/Font_Binary_Stream.php";
 require_once "$dir/Font_TrueType_Table_Directory_Entry.php";
 require_once "$dir/Font_TrueType_Header.php";
 require_once "$dir/Font_Table.php";
+require_once "$dir/Font_Table_name.php";
 require_once "$dir/Adobe_Font_Metrics.php";
 
 /**
