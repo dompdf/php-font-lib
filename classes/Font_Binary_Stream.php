@@ -145,7 +145,7 @@ class Font_Binary_Stream {
   }
 
   public function write($data, $length = null) {
-    if ($data === null || $data === "") {
+    if ($data === null || $data === "" || $data === false) {
       return 0;
     }
     
