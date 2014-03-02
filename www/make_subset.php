@@ -6,6 +6,9 @@
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
+use FontLib\Font;
+use FontLib\Binary_Stream;
+
 $fontfile = null;
 if (isset($_GET["fontfile"])) {
   $fontfile = basename($_GET["fontfile"]);
@@ -22,8 +25,8 @@ if (isset($_POST["subset"])) {
   $subset = $_POST["subset"];
   
   ob_start();
-  
-  require_once "../classes/Font.php";
+
+  require_once "../src/FontLib/Autoloader.php";
   
   $font = Font::load($fontfile);
   $font->parse();
@@ -32,13 +35,14 @@ if (isset($_POST["subset"])) {
   $font->reduce();
 
   $new_filename = basename($fontfile);
-  $new_filename = substr($new_filename, 0, -4)."-subset.".substr($new_filename, -3);
+  $dot = strpos($new_filename, ".");
+  $new_filename = substr($new_filename, 0, $dot)."-subset".substr($new_filename, $dot);
   
   header("Content-Type: font/truetype");
   header("Content-Disposition: attachment; filename=\"$new_filename\"");
   
   $tmp = tempnam(sys_get_temp_dir(), "fnt");
-  $font->open($tmp, Font_Binary_Stream::modeWrite);
+  $font->open($tmp, Binary_Stream::modeWrite);
   $font->encode(array("OS/2"));
   $font->close();
   
