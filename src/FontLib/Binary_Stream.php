@@ -104,11 +104,9 @@ class Binary_Stream {
     $f = null;
 
     if ($allow_memory) {
-      // PHP 5.1+
-      @fopen("php://temp", "rb+");
+      $f = fopen("php://temp", "rb+");
     }
-
-    if (!$f) {
+    else {
       $f = fopen(tempnam(sys_get_temp_dir(), "fnt"), "rb+");
     }
 
