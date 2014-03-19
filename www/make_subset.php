@@ -61,7 +61,7 @@ if (isset($_POST["subset"])) {
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <h1><?php echo $name; ?></h1>
+  <h1><?php echo htmlentities($name); ?></h1>
   <form name="make-subset" method="post" action="?fontfile=<?php echo $fontfile; ?>">
     <label>
       Insert the text from which you want the glyphs in the subsetted font: <br />
