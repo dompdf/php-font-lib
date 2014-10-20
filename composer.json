@@ -11,8 +11,8 @@
         }
     ],
     "autoload": {
-        "psr-0": {
-            "FontLib\\": "src/"
+        "psr-4": {
+            "FontLib\\": "src/FontLib"
         }
     }
 }
