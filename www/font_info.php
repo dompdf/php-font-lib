@@ -15,9 +15,9 @@ use FontLib\TrueType\Collection;
   <meta charset="utf-8" />
   <title>Font information</title>
   <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/blitzer/jquery-ui-1.8.14.custom.css" />
-  <script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
-  <script type="text/javascript" src="js/jquery-ui-1.8.14.custom.min.js"></script>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/blitzer/jquery-ui.css" />
+  <script type="text/javascript" src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+  <script type="text/javascript" src="//code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
   <script type="text/javascript" src="js/glyph.js?v=5"></script>
   <script type="text/javascript">
     $(function() {
