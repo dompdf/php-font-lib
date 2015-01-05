@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/blitzer/jquery-ui-1.8.14.custom.css" />
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/blitzer/jquery-ui.css" />
 </head>
 <body>
 <pre>
