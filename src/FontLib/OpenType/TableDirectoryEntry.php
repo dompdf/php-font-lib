@@ -13,6 +13,6 @@ namespace FontLib\OpenType;
  *
  * @package php-font-lib
  */
-class Table_Directory_Entry extends \FontLib\TrueType\Table_Directory_Entry {
+class TableDirectoryEntry extends \FontLib\TrueType\TableDirectoryEntry {
 
 }

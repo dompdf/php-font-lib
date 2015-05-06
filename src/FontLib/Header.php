@@ -14,7 +14,7 @@ use FontLib\TrueType\File;
  *
  * @package php-font-lib
  */
-abstract class Header extends Binary_Stream {
+abstract class Header extends BinaryStream {
   /**
    * @var File
    */

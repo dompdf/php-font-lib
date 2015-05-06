@@ -9,7 +9,7 @@
 namespace FontLib\TrueType;
 
 use Countable;
-use FontLib\Binary_Stream;
+use FontLib\BinaryStream;
 use Iterator;
 use OutOfBoundsException;
 
@@ -18,7 +18,7 @@ use OutOfBoundsException;
  *
  * @package php-font-lib
  */
-class Collection extends Binary_Stream implements Iterator, Countable {
+class Collection extends BinaryStream implements Iterator, Countable {
   /**
    * Current iterator position.
    *

@@ -8,21 +8,21 @@
 
 namespace FontLib\TrueType;
 
-use FontLib\Adobe_Font_Metrics;
+use FontLib\AdobeFontMetrics;
 use FontLib\Font;
-use FontLib\Binary_Stream;
+use FontLib\BinaryStream;
 use FontLib\Table\Table;
-use FontLib\Table\Directory_Entry;
+use FontLib\Table\DirectoryEntry;
 use FontLib\Table\Type\glyf;
 use FontLib\Table\Type\name;
-use FontLib\Table\Type\name_Record;
+use FontLib\Table\Type\nameRecord;
 
 /**
  * TrueType font file.
  *
  * @package php-font-lib
  */
-class File extends Binary_Stream {
+class File extends BinaryStream {
   /**
    * @var Header
    */
@@ -228,7 +228,7 @@ class File extends Binary_Stream {
 
     Font::d("Tables : " . implode(", ", $tags));
 
-    /** @var Directory_Entry[] $entries */
+    /** @var DirectoryEntry[] $entries */
     $entries = array();
     foreach ($tags as $tag) {
       if (!isset($this->directory[$tag])) {
@@ -282,10 +282,10 @@ class File extends Binary_Stream {
 
 
     $type = $this->getFontType();
-    $class = "FontLib\\$type\\Table_Directory_Entry";
+    $class = "FontLib\\$type\\TableDirectoryEntry";
 
     for ($i = 0; $i < $this->header->data["numTables"]; $i++) {
-      /** @var Table_Directory_Entry $entry */
+      /** @var TableDirectoryEntry $entry */
       $entry = new $class($this);
       $entry->parse();
 
@@ -352,12 +352,12 @@ class File extends Binary_Stream {
     }
   }
 
-  function addDirectoryEntry(Directory_Entry $entry) {
+  function addDirectoryEntry(DirectoryEntry $entry) {
     $this->directory[$entry->tag] = $entry;
   }
 
   function saveAdobeFontMetrics($file, $encoding = null) {
-    $afm = new Adobe_Font_Metrics($this);
+    $afm = new AdobeFontMetrics($this);
     $afm->write($file, $encoding);
   }
 
@@ -369,7 +369,7 @@ class File extends Binary_Stream {
    * @return string|null
    */
   function getNameTableString($nameID) {
-    /** @var name_Record[] $records */
+    /** @var nameRecord[] $records */
     $records = $this->getData("name", "records");
 
     if (!isset($records[$nameID])) {

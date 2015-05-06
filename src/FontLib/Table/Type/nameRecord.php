@@ -8,14 +8,14 @@
 namespace FontLib\Table\Type;
 
 use FontLib\Font;
-use FontLib\Binary_Stream;
+use FontLib\BinaryStream;
 
 /**
  * Font table name record.
  *
  * @package php-font-lib
  */
-class name_Record extends Binary_Stream {
+class nameRecord extends BinaryStream {
   public $platformID;
   public $platformSpecificID;
   public $languageID;

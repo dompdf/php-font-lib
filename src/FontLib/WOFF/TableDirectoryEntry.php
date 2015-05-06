@@ -8,14 +8,14 @@
 
 namespace FontLib\WOFF;
 
-use FontLib\Table\Directory_Entry;
+use FontLib\Table\DirectoryEntry;
 
 /**
  * WOFF font file table directory entry.
  *
  * @package php-font-lib
  */
-class Table_Directory_Entry extends Directory_Entry {
+class TableDirectoryEntry extends DirectoryEntry {
   public $origLength;
 
   function __construct(File $font) {

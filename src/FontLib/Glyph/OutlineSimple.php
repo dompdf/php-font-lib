@@ -14,7 +14,7 @@ namespace FontLib\Glyph;
  *
  * @package php-font-lib
  */
-class Outline_Simple extends Outline {
+class OutlineSimple extends Outline {
   const ON_CURVE       = 0x01;
   const X_SHORT_VECTOR = 0x02;
   const Y_SHORT_VECTOR = 0x04;

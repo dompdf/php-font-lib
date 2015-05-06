@@ -9,14 +9,12 @@
 
 namespace FontLib\Glyph;
 
-use FontLib\Table\Type\glyf;
-
 /**
  * Composite glyph outline
  *
  * @package php-font-lib
  */
-class Outline_Composite extends Outline {
+class OutlineComposite extends Outline {
   const ARG_1_AND_2_ARE_WORDS    = 0x0001;
   const ARGS_ARE_XY_VALUES       = 0x0002;
   const ROUND_XY_TO_GRID         = 0x0004;
@@ -29,7 +27,7 @@ class Outline_Composite extends Outline {
   const OVERLAP_COMPOUND         = 0x0400;
 
   /**
-   * @var Outline_Component[]
+   * @var OutlineComponent[]
    */
   public $components = array();
 
@@ -113,7 +111,7 @@ class Outline_Composite extends Outline {
       //
       //}
 
-      $component                  = new Outline_Component();
+      $component                  = new OutlineComponent();
       $component->flags           = $flags;
       $component->glyphIndex      = $glyphIndex;
       $component->a               = $a;
@@ -219,7 +217,7 @@ class Outline_Composite extends Outline {
   public function getSVGContours() {
     $contours = array();
 
-    /** @var \FontLib\Table\\FontLib\Table\Type\glyf $glyph_data */
+    /** @var \FontLib\Table\Type\glyf $glyph_data */
     $glyph_data = $this->getFont()->getTableObject("glyf");
 
     /** @var Outline[] $glyphs */

@@ -7,7 +7,7 @@
  */
 
 use FontLib\Font;
-use FontLib\Binary_Stream;
+use FontLib\BinaryStream;
 
 $fontfile = null;
 if (isset($_GET["fontfile"])) {
@@ -42,7 +42,7 @@ if (isset($_POST["subset"])) {
   header("Content-Disposition: attachment; filename=\"$new_filename\"");
   
   $tmp = tempnam(sys_get_temp_dir(), "fnt");
-  $font->open($tmp, Binary_Stream::modeWrite);
+  $font->open($tmp, BinaryStream::modeWrite);
   $font->encode(array("OS/2"));
   $font->close();
   

@@ -16,7 +16,7 @@ use FontLib\TrueType\File;
  *
  * @package php-font-lib
  */
-class Adobe_Font_Metrics {
+class AdobeFontMetrics {
   private $f;
 
   /**
@@ -38,7 +38,7 @@ class Adobe_Font_Metrics {
         throw new \Exception("Unkown encoding ($encoding)");
       }
 
-      $map      = new Encoding_Map($map_file);
+      $map      = new EncodingMap($map_file);
       $map_data = $map->parse();
     }
 

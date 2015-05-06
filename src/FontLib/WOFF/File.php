@@ -8,14 +8,14 @@
 
 namespace FontLib\WOFF;
 
-use FontLib\Table\Directory_Entry;
+use FontLib\Table\DirectoryEntry;
 
 /**
  * WOFF font file.
  *
  * @package php-font-lib
  *
- * @property Table_Directory_Entry[] $directory
+ * @property TableDirectoryEntry[] $directory
  */
 class File extends \FontLib\TrueType\File {
   function parseHeader() {
@@ -63,7 +63,7 @@ class File extends \FontLib\TrueType\File {
       $offset += $this->writeUInt32($dataOffset); // offset
       $offset += $this->writeUInt32($length); // length
       $offset += $this->writeUInt32($length); // origLength
-      $offset += $this->writeUInt32(Directory_Entry::computeChecksum($data)); // checksum
+      $offset += $this->writeUInt32(DirectoryEntry::computeChecksum($data)); // checksum
 
       // Data
       $this->seek($dataOffset);

@@ -61,9 +61,13 @@ class File extends \FontLib\TrueType\File {
     // TODO Read font data ...
   }
 
-  /**
-   * Little endian version of the read method
-   */
+    /**
+     * Little endian version of the read method
+     *
+     * @param int $n The number of bytes to read
+     *
+     * @return string
+     */
   public function read($n) {
     if ($n < 1) {
       return "";

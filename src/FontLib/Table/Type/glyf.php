@@ -10,7 +10,7 @@ namespace FontLib\Table\Type;
 
 use FontLib\Table\Table;
 use FontLib\Glyph\Outline;
-use FontLib\Glyph\Outline_Simple;
+use FontLib\Glyph\OutlineSimple;
 
 /**
  * `glyf` font table.
@@ -106,7 +106,7 @@ class glyf extends Table {
       );
       $shape_json = json_encode($shape);
 
-      $type = ($glyph instanceof Outline_Simple ? "simple" : "composite");
+      $type = ($glyph instanceof OutlineSimple ? "simple" : "composite");
       $char = isset($glyphIndexArray[$g]) ? $glyphIndexArray[$g] : 0;
       $name = isset($names[$g]) ? $names[$g] : sprintf("uni%04x", $char);
       $char = $char ? "&#{$glyphIndexArray[$g]};" : "";

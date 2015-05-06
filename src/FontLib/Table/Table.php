@@ -9,23 +9,23 @@ namespace FontLib\Table;
 
 use FontLib\TrueType\File;
 use FontLib\Font;
-use FontLib\Binary_Stream;
+use FontLib\BinaryStream;
 
 /**
  * Generic font table.
  *
  * @package php-font-lib
  */
-class Table extends Binary_Stream {
+class Table extends BinaryStream {
   /**
-   * @var Directory_Entry
+   * @var DirectoryEntry
    */
   protected $entry;
   protected $def = array();
 
   public $data;
 
-  final public function __construct(Directory_Entry $entry) {
+  final public function __construct(DirectoryEntry $entry) {
     $this->entry = $entry;
     $entry->setTable($this);
   }

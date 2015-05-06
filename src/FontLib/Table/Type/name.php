@@ -143,8 +143,8 @@ class name extends Table {
 
     $records = array();
     for ($i = 0; $i < $data["count"]; $i++) {
-      $record      = new name_Record();
-      $record_data = $font->unpack(name_Record::$format);
+      $record      = new nameRecord();
+      $record_data = $font->unpack(nameRecord::$format);
       $record->map($record_data);
 
       $records[] = $record;
@@ -166,7 +166,7 @@ class name extends Table {
   protected function _encode() {
     $font = $this->getFont();
 
-    /** @var name_Record[] $records */
+    /** @var nameRecord[] $records */
     $records       = $this->data["records"];
     $count_records = count($records);
 
@@ -180,7 +180,7 @@ class name extends Table {
       $record->length = mb_strlen($record->getUTF16(), "8bit");
       $record->offset = $offset;
       $offset += $record->length;
-      $length += $font->pack(name_Record::$format, (array)$record);
+      $length += $font->pack(nameRecord::$format, (array)$record);
     }
 
     foreach ($records as $record) {

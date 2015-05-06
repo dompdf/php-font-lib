@@ -8,14 +8,14 @@
 
 namespace FontLib\TrueType;
 
-use FontLib\Table\Directory_Entry;
+use FontLib\Table\DirectoryEntry;
 
 /**
  * TrueType table directory entry.
  *
  * @package php-font-lib
  */
-class Table_Directory_Entry extends Directory_Entry {
+class TableDirectoryEntry extends DirectoryEntry {
   function __construct(File $font) {
     parent::__construct($font);
   }

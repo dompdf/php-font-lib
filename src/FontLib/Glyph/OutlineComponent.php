@@ -13,7 +13,7 @@ namespace FontLib\Glyph;
  *
  * @package php-font-lib
  */
-class Outline_Component {
+class OutlineComponent {
   public $flags;
   public $glyphIndex;
   public $a, $b, $c, $d, $e, $f;

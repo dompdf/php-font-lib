@@ -13,7 +13,7 @@ namespace FontLib;
  *
  * @package php-font-lib
  */
-class Binary_Stream {
+class BinaryStream {
   /**
    * @var resource The file pointer
    */

@@ -9,14 +9,14 @@ namespace FontLib\Table;
 
 use FontLib\TrueType\File;
 use FontLib\Font;
-use FontLib\Binary_Stream;
+use FontLib\BinaryStream;
 
 /**
  * Generic Font table directory entry.
  *
  * @package php-font-lib
  */
-class Directory_Entry extends Binary_Stream {
+class DirectoryEntry extends BinaryStream {
   /**
    * @var File
    */

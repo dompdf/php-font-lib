@@ -10,7 +10,7 @@
 <?php
 
 use FontLib\Font;
-use FontLib\Binary_Stream;
+use FontLib\BinaryStream;
 
 require_once "../src/FontLib/Autoloader.php";
 
@@ -18,19 +18,19 @@ $t = microtime(true);
 
 // RW methods
 $values = array(
-  array(Binary_Stream::uint8, 9),
-  array(Binary_Stream::int8, 9),
-  array(Binary_Stream::uint16, 5040),
-  array(Binary_Stream::int16, -5040),
-  array(Binary_Stream::uint32, 8400245),
-  array(Binary_Stream::int32, 8400245),
-  array(Binary_Stream::shortFrac, 1.0),
-  array(Binary_Stream::Fixed, -155.54),
-  array(Binary_Stream::FWord, -5040),
-  array(Binary_Stream::uFWord, 5040),
-  array(Binary_Stream::F2Dot14, -56.54),
-  array(Binary_Stream::longDateTime, "2011-07-21 21:37:00"),
-  array(Binary_Stream::char, "A"),
+  array(BinaryStream::uint8, 9),
+  array(BinaryStream::int8, 9),
+  array(BinaryStream::uint16, 5040),
+  array(BinaryStream::int16, -5040),
+  array(BinaryStream::uint32, 8400245),
+  array(BinaryStream::int32, 8400245),
+  array(BinaryStream::shortFrac, 1.0),
+  array(BinaryStream::Fixed, -155.54),
+  array(BinaryStream::FWord, -5040),
+  array(BinaryStream::uFWord, 5040),
+  array(BinaryStream::F2Dot14, -56.54),
+  array(BinaryStream::longDateTime, "2011-07-21 21:37:00"),
+  array(BinaryStream::char, "A"),
 );
 /*
 $stream = new Font_Binary_Stream();
@@ -64,7 +64,7 @@ $font->parse();
 $font->setSubset("(.apbiI,mn");
 $font->reduce();
 
-$font->open($filename_out, Binary_Stream::modeWrite);
+$font->open($filename_out, BinaryStream::modeWrite);
 $font->encode(array("OS/2"));
 
 ?>

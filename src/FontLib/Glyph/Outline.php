@@ -10,14 +10,14 @@ namespace FontLib\Glyph;
 
 use FontLib\Table\Type\glyf;
 use FontLib\TrueType\File;
-use FontLib\Binary_Stream;
+use FontLib\BinaryStream;
 
 /**
  * `glyf` font table.
  *
  * @package php-font-lib
  */
-class Outline extends Binary_Stream {
+class Outline extends BinaryStream {
   /**
    * @var \FontLib\Table\Type\glyf
    */
@@ -47,12 +47,12 @@ class Outline extends Binary_Stream {
     $font->seek($offset);
 
     if ($font->readInt16() > -1) {
-      /** @var Outline_Simple $glyph */
-      $glyph = new Outline_Simple($table, $offset, $size);
+      /** @var OutlineSimple $glyph */
+      $glyph = new OutlineSimple($table, $offset, $size);
     }
     else {
-      /** @var Outline_Composite $glyph */
-      $glyph = new Outline_Composite($table, $offset, $size);
+      /** @var OutlineComposite $glyph */
+      $glyph = new OutlineComposite($table, $offset, $size);
     }
 
     $glyph->parse();
