@@ -1,3 +1,8 @@
+# PHP Font Lib
+
+[![Build Status](https://travis-ci.org/PhenX/php-font-lib.svg?branch=master)](https://travis-ci.org/PhenX/php-font-lib)
+
+
 This library can be used to:
  * Read TrueType, OpenType (with TrueType glyphs), WOFF font files
  * Extract basic info (name, style, etc)
