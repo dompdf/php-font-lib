@@ -64,15 +64,15 @@ class cmap extends Table {
       $segCount             = $subtable["segCountX2"] / 2;
       $subtable["segCount"] = $segCount;
 
-      $endCode = $font->r(array(self::uint16, $segCount));
+      $endCode = $font->readUInt16Many($segCount);
 
       $font->readUInt16(); // reservedPad
 
-      $startCode = $font->r(array(self::uint16, $segCount));
-      $idDelta   = $font->r(array(self::int16, $segCount));
+      $startCode = $font->readUInt16Many($segCount);
+      $idDelta   = $font->readInt16Many($segCount);
 
       $ro_start      = $font->pos();
-      $idRangeOffset = $font->r(array(self::uint16, $segCount));
+      $idRangeOffset = $font->readUInt16Many($segCount);
 
       $glyphIndexArray = array();
       for ($i = 0; $i < $segCount; $i++) {
