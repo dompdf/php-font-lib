@@ -185,6 +185,10 @@ class BinaryStream {
     return $a["n"];
   }
 
+  public function readUInt16Many($count) {
+    return array_values(unpack("n*", $this->read($count * 2)));
+  }
+
   public function readUFWord() {
     return $this->readUInt16();
   }
@@ -205,6 +209,17 @@ class BinaryStream {
     }
 
     return $v;
+  }
+
+  public function readInt16Many($count) {
+    $vals = array_values(unpack("n*", $this->read($count * 2)));
+    foreach ($vals as &$v) {
+      if ($v >= 0x8000) {
+        $v -= 0x10000;
+      }
+    }
+
+    return $vals;
   }
 
   public function readFWord() {
