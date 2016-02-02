@@ -157,6 +157,10 @@ class BinaryStream {
     return ord($this->read(1));
   }
 
+  public function readUInt8Many($count) {
+    return array_values(unpack("C*", $this->read($count)));
+  }
+
   public function writeUInt8($data) {
     return $this->write(chr($data), 1);
   }
@@ -169,6 +173,10 @@ class BinaryStream {
     }
 
     return $v;
+  }
+
+  public function readInt8Many($count) {
+    return array_values(unpack("c*", $this->read($count)));
   }
 
   public function writeInt8($data) {
