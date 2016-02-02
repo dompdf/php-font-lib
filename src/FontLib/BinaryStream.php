@@ -342,6 +342,18 @@ class BinaryStream {
           if ($type[0] == self::char) {
             return $this->read($type[1]);
           }
+          if ($type[0] == self::uint16) {
+            return $this->readUInt16Many($type[1]);
+          }
+          if ($type[0] == self::int16) {
+            return $this->readInt16Many($type[1]);
+          }
+          if ($type[0] == self::uint8) {
+            return $this->readUInt8Many($type[1]);
+          }
+          if ($type[0] == self::int8) {
+            return $this->readInt8Many($type[1]);
+          }
 
           $ret = array();
           for ($i = 0; $i < $type[1]; $i++) {
