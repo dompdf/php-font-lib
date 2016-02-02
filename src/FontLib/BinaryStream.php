@@ -157,6 +157,10 @@ class BinaryStream {
     return ord($this->read(1));
   }
 
+  public function readUInt8Many($count) {
+    return array_values(unpack("C*", $this->read($count)));
+  }
+
   public function writeUInt8($data) {
     return $this->write(chr($data), 1);
   }
@@ -171,6 +175,10 @@ class BinaryStream {
     return $v;
   }
 
+  public function readInt8Many($count) {
+    return array_values(unpack("c*", $this->read($count)));
+  }
+
   public function writeInt8($data) {
     if ($data < 0) {
       $data += 0x100;
@@ -183,6 +191,10 @@ class BinaryStream {
     $a = unpack("nn", $this->read(2));
 
     return $a["n"];
+  }
+
+  public function readUInt16Many($count) {
+    return array_values(unpack("n*", $this->read($count * 2)));
   }
 
   public function readUFWord() {
@@ -205,6 +217,17 @@ class BinaryStream {
     }
 
     return $v;
+  }
+
+  public function readInt16Many($count) {
+    $vals = array_values(unpack("n*", $this->read($count * 2)));
+    foreach ($vals as &$v) {
+      if ($v >= 0x8000) {
+        $v -= 0x10000;
+      }
+    }
+
+    return $vals;
   }
 
   public function readFWord() {
@@ -318,6 +341,18 @@ class BinaryStream {
         if (is_array($type)) {
           if ($type[0] == self::char) {
             return $this->read($type[1]);
+          }
+          if ($type[0] == self::uint16) {
+            return $this->readUInt16Many($type[1]);
+          }
+          if ($type[0] == self::int16) {
+            return $this->readInt16Many($type[1]);
+          }
+          if ($type[0] == self::uint8) {
+            return $this->readUInt8Many($type[1]);
+          }
+          if ($type[0] == self::int8) {
+            return $this->readInt8Many($type[1]);
           }
 
           $ret = array();
