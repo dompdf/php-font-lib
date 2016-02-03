@@ -411,7 +411,9 @@ class BinaryStream {
 
           $ret = 0;
           for ($i = 0; $i < $type[1]; $i++) {
-            $ret += $this->w($type[0], $data[$i]);
+            if (isset($data[$i])) {
+              $ret += $this->w($type[0], $data[$i]);
+            }
           }
 
           return $ret;
