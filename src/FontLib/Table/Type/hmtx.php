@@ -25,9 +25,10 @@ class hmtx extends Table {
     $font->seek($offset);
 
     $data = array();
-    for ($gid = 0; $gid < $numOfLongHorMetrics; $gid++) {
-      $advanceWidth    = $font->readUInt16();
-      $leftSideBearing = $font->readUInt16();
+    $metrics = $font->readUInt16Many($numOfLongHorMetrics * 2);
+    for ($gid = 0, $mid = 0; $gid < $numOfLongHorMetrics; $gid++) {
+      $advanceWidth    = $metrics[$mid++];
+      $leftSideBearing = $metrics[$mid++];
       $data[$gid]      = array($advanceWidth, $leftSideBearing);
     }
 
