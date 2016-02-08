@@ -274,6 +274,12 @@ class BinaryStream {
     $this->readUInt32(); // ignored
     $date = $this->readUInt32() - 2082844800;
 
+    if ($date > PHP_INT_MAX) {
+      $date = PHP_INT_MAX;
+    } elseif ($date < PHP_INT_MIN) {
+      $date = PHP_INT_MIN;
+    }
+
     return strftime("%Y-%m-%d %H:%M:%S", $date);
   }
 
