@@ -210,7 +210,8 @@ class BinaryStream {
   }
 
   public function readInt16() {
-    $v = $this->readUInt16();
+    $a = unpack("nn", $this->read(2));
+    $v = $a["n"];
 
     if ($v >= 0x8000) {
       $v -= 0x10000;
