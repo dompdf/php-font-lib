@@ -157,6 +157,10 @@ class BinaryStream {
     return ord($this->read(1));
   }
 
+  public function readUInt8Many($count) {
+    return array_values(unpack("C*", $this->read($count)));
+  }
+
   public function writeUInt8($data) {
     return $this->write(chr($data), 1);
   }
@@ -169,6 +173,10 @@ class BinaryStream {
     }
 
     return $v;
+  }
+
+  public function readInt8Many($count) {
+    return array_values(unpack("c*", $this->read($count)));
   }
 
   public function writeInt8($data) {
@@ -185,6 +193,10 @@ class BinaryStream {
     return $a["n"];
   }
 
+  public function readUInt16Many($count) {
+    return array_values(unpack("n*", $this->read($count * 2)));
+  }
+
   public function readUFWord() {
     return $this->readUInt16();
   }
@@ -198,13 +210,25 @@ class BinaryStream {
   }
 
   public function readInt16() {
-    $v = $this->readUInt16();
+    $a = unpack("nn", $this->read(2));
+    $v = $a["n"];
 
     if ($v >= 0x8000) {
       $v -= 0x10000;
     }
 
     return $v;
+  }
+
+  public function readInt16Many($count) {
+    $vals = array_values(unpack("n*", $this->read($count * 2)));
+    foreach ($vals as &$v) {
+      if ($v >= 0x8000) {
+        $v -= 0x10000;
+      }
+    }
+
+    return $vals;
   }
 
   public function readFWord() {
@@ -250,6 +274,12 @@ class BinaryStream {
   public function readLongDateTime() {
     $this->readUInt32(); // ignored
     $date = $this->readUInt32() - 2082844800;
+
+    if ($date > PHP_INT_MAX) {
+      $date = PHP_INT_MAX;
+    } elseif ($date < PHP_INT_MIN) {
+      $date = PHP_INT_MIN;
+    }
 
     return strftime("%Y-%m-%d %H:%M:%S", $date);
   }
@@ -318,6 +348,18 @@ class BinaryStream {
         if (is_array($type)) {
           if ($type[0] == self::char) {
             return $this->read($type[1]);
+          }
+          if ($type[0] == self::uint16) {
+            return $this->readUInt16Many($type[1]);
+          }
+          if ($type[0] == self::int16) {
+            return $this->readInt16Many($type[1]);
+          }
+          if ($type[0] == self::uint8) {
+            return $this->readUInt8Many($type[1]);
+          }
+          if ($type[0] == self::int8) {
+            return $this->readInt8Many($type[1]);
           }
 
           $ret = array();
