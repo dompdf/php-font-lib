@@ -274,11 +274,12 @@ class BinaryStream {
   public function readLongDateTime() {
     $this->readUInt32(); // ignored
     $date = $this->readUInt32() - 2082844800;
+    
+    # PHP_INT_MIN isn't defined in PHP < 7.0
+    $php_int_min = defined("PHP_INT_MIN") ? PHP_INT_MIN : ~PHP_INT_MAX;
 
-    if ($date > PHP_INT_MAX) {
-      $date = PHP_INT_MAX;
-    } elseif ($date < PHP_INT_MIN) {
-      $date = PHP_INT_MIN;
+    if (is_string($date) || $date > PHP_INT_MAX || $date < $php_int_min) {
+      $date = 0;
     }
 
     return strftime("%Y-%m-%d %H:%M:%S", $date);
