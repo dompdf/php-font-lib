@@ -19,8 +19,6 @@ class FontTest extends \PHPUnit_Framework_TestCase
         $trueTypeFont = Font::load('sample-fonts/IntelClear-Light.ttf');
 
         $this->assertInstanceOf('FontLib\TrueType\File', $trueTypeFont);
-
-        $trueTypeFont->saveAdobeFontMetrics("IntelClear-Light.font.data");
     }
 
     public function test12CmapFormat()
