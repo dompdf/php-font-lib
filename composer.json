@@ -15,6 +15,11 @@
             "FontLib\\": "src/FontLib"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "FontLib\\Tests\\": "tests/FontLib"
+        }
+    },
     "config": {
       "bin-dir": "bin"
     },
