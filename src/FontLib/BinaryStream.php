@@ -38,16 +38,18 @@ class BinaryStream {
   const modeReadWrite = "rb+";
 
   static function backtrace() {
-    var_dump(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
+      /** @noinspection ForgottenDebugOutputInspection */
+      var_dump(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
   }
 
-  /**
-   * Open a font file in read mode
-   *
-   * @param string $filename The file name of the font to open
-   *
-   * @return bool
-   */
+    /**
+     * Open a font file in read mode
+     *
+     * @param string $filename The file name of the font to open
+     *
+     * @return bool
+     * @throws \Exception
+     */
   public function load($filename) {
     return $this->open($filename, self::modeRead);
   }
@@ -142,7 +144,8 @@ class BinaryStream {
       return "";
     }
 
-    return fread($this->f, $n);
+      /** @noinspection PhpUsageOfSilenceOperatorInspection - handle the return data, DO NOT spew E_NOTICEs */
+      return @fread($this->f, $n);
   }
 
   public function write($data, $length = null) {
@@ -150,7 +153,8 @@ class BinaryStream {
       return 0;
     }
 
-    return fwrite($this->f, $data, $length);
+      /** @noinspection PhpUsageOfSilenceOperatorInspection - handle the return data, DO NOT spew E_NOTICEs */
+    return @fwrite($this->f, $data, $length);
   }
 
   public function readUInt8() {
