@@ -5,19 +5,22 @@ env:
   - PREFER_LOWEST=""
 
 php:
-    - 5.4
-    - 5.5
     - 5.6
     - 7.0
     - 7.1
     - 7.2
+    - 7.3
+    - 7.4
     - nightly
-    - hhvm
 
 matrix:
+  include:
+    - php: 5.4
+      dist: trusty
+    - php: 5.5
+      dist: trusty
   allow_failures:
     - php: nightly
-    - php: hhvm
   fast_finish: true
   
 before_script:
