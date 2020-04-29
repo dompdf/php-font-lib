@@ -145,7 +145,7 @@ class BinaryStream {
     }
 
       /** @noinspection PhpUsageOfSilenceOperatorInspection - handle the return data, DO NOT spew E_NOTICEs */
-      return @fread($this->f, $n);
+    return @fread($this->f, $n);
   }
 
   public function write($data, $length = null) {
