@@ -38,7 +38,6 @@ class BinaryStream {
   const modeReadWrite = "rb+";
 
   static function backtrace() {
-      /** @noinspection ForgottenDebugOutputInspection */
       var_dump(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
   }
 
@@ -144,7 +143,7 @@ class BinaryStream {
       return "";
     }
 
-      /** @noinspection PhpUsageOfSilenceOperatorInspection - handle the return data, DO NOT spew E_NOTICEs */
+    // handle the return data, DO NOT spew E_NOTICEs
     return @fread($this->f, $n);
   }
 
@@ -153,7 +152,7 @@ class BinaryStream {
       return 0;
     }
 
-      /** @noinspection PhpUsageOfSilenceOperatorInspection - handle the return data, DO NOT spew E_NOTICEs */
+    // handle the return data, DO NOT spew E_NOTICEs
     return @fwrite($this->f, $data, $length);
   }
 
