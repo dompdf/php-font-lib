@@ -57,7 +57,7 @@ class post extends Table {
             $names[$g] = File::$macCharNames[$index];
           }
           else {
-            $names[$g] = $namesPascal[$index - 258];
+            $names[$g] = isset($namesPascal[$index - 258]) ? $namesPascal[$index - 258] : 0;
           }
         }
 
