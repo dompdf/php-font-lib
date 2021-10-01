@@ -28,7 +28,7 @@ class Font {
           throw new FontNotFoundException($file);
       }
 
-    $header = file_get_contents($file, false, null, null, 4);
+    $header = file_get_contents($file, false, null, 0, 4);
     $class  = null;
 
     switch ($header) {
