@@ -46,4 +46,4 @@ jobs:
           run: composer update ${{ matrix.prefer-lowest }} --no-progress --ansi
 
         - name: Run tests ${{ matrix.php-version }} ${{ matrix.prefer-lowest }}
-          run: simple-phpunit --color=always
+          run: SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT=1 bin/simple-phpunit --color=always
