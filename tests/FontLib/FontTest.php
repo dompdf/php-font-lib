@@ -9,8 +9,16 @@ class FontTest extends TestCase
 {
     public function testLoadFileNotFound()
     {
-        $this->expectException('\Fontlib\Exception\FontNotFoundException');
-        Font::load('non-existing/font.ttf');
+        // @todo when PHP 5.4 support is dropped, uncomment line below and drop
+        //       the try...catch block.
+        // $this->expectException('\Fontlib\Exception\FontNotFoundException');
+        try {
+            Font::load('non-existing/font.ttf');
+            $this->fail('Load should have failed.');
+        }
+        catch (\Fontlib\Exception\FontNotFoundException $e) {
+            // Do nothing.
+        }
     }
 
     public function testLoadTTFFontSuccessfully()
