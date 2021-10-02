@@ -43,7 +43,7 @@ jobs:
             ini-values: "zend.assertions=1"
 
         - name: Install Composer dependencies
-          run: composer install ${{ matrix.prefer-lowest }} --no-progress --ansi
+          run: composer update ${{ matrix.prefer-lowest }} --no-progress --ansi
 
         - name: Run tests ${{ matrix.php-version }} ${{ matrix.prefer-lowest }}
-          run: ./vendor/bin/simple-phpunit --color=always
+          run: simple-phpunit --color=always
