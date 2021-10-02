@@ -9,7 +9,7 @@ class FontTest extends TestCase
 {
     public function testLoadFileNotFound()
     {
-        $this->expectedException('\Fontlib\Exception\FontNotFoundException');
+        $this->expectException('\Fontlib\Exception\FontNotFoundException');
         Font::load('non-existing/font.ttf');
     }
 
