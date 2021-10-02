@@ -27,9 +27,6 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
-        prefer-lowest:
-          - ""
-          - "--prefer-lowest"
 
     steps:
 
@@ -43,7 +40,7 @@ jobs:
             ini-values: "zend.assertions=1"
 
         - name: Install Composer dependencies
-          run: composer update ${{ matrix.prefer-lowest }} --no-progress --ansi
+          run: composer install --no-progress --ansi
 
-        - name: Run tests ${{ matrix.php-version }} ${{ matrix.prefer-lowest }}
+        - name: Run tests ${{ matrix.php-version }}
           run: SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT=1 bin/simple-phpunit --color=always

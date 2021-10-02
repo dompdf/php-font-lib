@@ -7,11 +7,9 @@ use PHPUnit\Framework\TestCase;
 
 class FontTest extends TestCase
 {
-    /**
-     * @expectedException \Fontlib\Exception\FontNotFoundException
-     */
     public function testLoadFileNotFound()
     {
+        $this->expectedException('\Fontlib\Exception\FontNotFoundException');
         Font::load('non-existing/font.ttf');
     }
 
