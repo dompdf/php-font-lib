@@ -17,7 +17,8 @@ class FontTest extends TestCase
             $this->fail('Load should have failed.');
         }
         catch (\Fontlib\Exception\FontNotFoundException $e) {
-            // Do nothing.
+            // Avoid throwing a risky test error.
+            $this->assertTrue(true);
         }
     }
 
