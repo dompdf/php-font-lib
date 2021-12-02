@@ -7,12 +7,19 @@ use PHPUnit\Framework\TestCase;
 
 class FontTest extends TestCase
 {
-    /**
-     * @expectedException \Fontlib\Exception\FontNotFoundException
-     */
     public function testLoadFileNotFound()
     {
-        Font::load('non-existing/font.ttf');
+        // @todo when PHP 5.4 support is dropped, uncomment line below and drop
+        //       the try...catch block.
+        // $this->expectException('\Fontlib\Exception\FontNotFoundException');
+        try {
+            Font::load('non-existing/font.ttf');
+            $this->fail('Load should have failed.');
+        }
+        catch (\Fontlib\Exception\FontNotFoundException $e) {
+            // Avoid throwing a risky test error.
+            $this->assertTrue(true);
+        }
     }
 
     public function testLoadTTFFontSuccessfully()
