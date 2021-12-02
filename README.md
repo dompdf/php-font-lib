@@ -1,3 +1,5 @@
+[![PHPUnit tests](https://github.com/dompdf/php-font-lib/actions/workflows/phpunit.yml/badge.svg)](https://github.com/dompdf/php-font-lib/actions/workflows/phpunit.yml)
+
 # PHP Font Lib
 
 This library can be used to:
