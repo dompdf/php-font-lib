@@ -23,6 +23,9 @@
     "config": {
         "bin-dir": "bin"
     },
+    "require": {
+        "ext-mbstring": "*"
+    },
     "require-dev": {
         "symfony/phpunit-bridge" : "^3 || ^4 || ^5"
     }
