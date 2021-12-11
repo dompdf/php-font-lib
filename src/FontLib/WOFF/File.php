@@ -50,7 +50,7 @@ class File extends \FontLib\TrueType\File {
       }
 
       // Prepare data ...
-      $length        = strlen($data);
+      $length        = mb_strlen($data, '8bit');
       $entry->length = $entry->origLength = $length;
       $entry->offset = $dataOffset;
 
