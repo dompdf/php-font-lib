@@ -74,8 +74,7 @@ class File extends \FontLib\TrueType\File {
     }
 
     $string = fread($this->f, $n);
-    $chunks = str_split($string, 2);
-    $chunks = array_map("strrev", $chunks);
+    $chunks = mb_str_split($string, 2, '8bit');
 
     return implode("", $chunks);
   }
