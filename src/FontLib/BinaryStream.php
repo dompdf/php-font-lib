@@ -63,7 +63,7 @@ class BinaryStream {
    */
   public function open($filename, $mode = self::modeRead) {
     if (!in_array($mode, array(self::modeRead, self::modeWrite, self::modeReadWrite))) {
-      throw new \Exception("Unkown file open mode");
+      throw new \Exception("Unknown file open mode");
     }
 
     $this->f = fopen($filename, $mode);
