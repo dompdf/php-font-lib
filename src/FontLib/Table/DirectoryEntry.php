@@ -36,6 +36,11 @@ class DirectoryEntry extends BinaryStream {
 
   protected $origF;
 
+  /**
+   * @param string $data
+   *
+   * @return int
+   */
   static function computeChecksum($data) {
     $len = mb_strlen($data, '8bit');
     $mod = $len % 4;

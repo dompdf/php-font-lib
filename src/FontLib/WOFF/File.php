@@ -46,7 +46,7 @@ class File extends \FontLib\TrueType\File {
       $data = $this->read($entry->length);
 
       if ($entry->length < $entry->origLength) {
-        $data = gzuncompress($data);
+        $data = (string) gzuncompress($data);
       }
 
       // Prepare data ...

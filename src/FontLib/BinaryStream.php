@@ -137,12 +137,17 @@ class BinaryStream {
     fseek($this->f, $n, SEEK_CUR);
   }
 
+  /**
+   * @param int $n The number of bytes to read
+   *
+   * @return string
+   */
   public function read($n) {
     if ($n < 1) {
       return "";
     }
 
-    return fread($this->f, $n);
+    return (string) fread($this->f, $n);
   }
 
   public function write($data, $length = null) {
