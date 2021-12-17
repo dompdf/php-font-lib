@@ -78,11 +78,7 @@ class Outline extends BinaryStream {
   function parse(BinaryStream $font) {
     $font->seek($this->offset);
 
-    if (!$this->size) {
-      return;
-    }
-
-    $this->raw = $font->read($this->size);
+      $this->raw = $font->read($this->size);
   }
 
   function parseData() {
