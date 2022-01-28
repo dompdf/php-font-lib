@@ -25,4 +25,5 @@ echo $font->getFontFullName() .'<br>';
 echo $font->getFontVersion() .'<br>';
 echo $font->getFontWeight() .'<br>';
 echo $font->getFontPostscriptName() .'<br>';
+$font->close();
 ```
