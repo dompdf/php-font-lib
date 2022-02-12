@@ -282,7 +282,7 @@ class cmap extends Table {
 
       $subtable["length"] = $length - $length_before;
       $font->seek($before_subheader);
-      $length += $font->pack(self::$subtable_v4_format, $subtable);
+      $font->pack(self::$subtable_v4_format, $subtable);
 
       $font->seek($after_subtable);
     }
