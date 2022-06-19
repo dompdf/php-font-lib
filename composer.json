@@ -27,6 +27,6 @@
         "ext-mbstring": "*"
     },
     "require-dev": {
-        "symfony/phpunit-bridge" : "^3 || ^4 || ^5"
+        "symfony/phpunit-bridge" : "^3 || ^4 || ^5 || ^6"
     }
 }
