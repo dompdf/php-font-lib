@@ -129,6 +129,11 @@ class OutlineComposite extends Outline {
 
       $this->components[] = $component;
     } while ($flags & self::MORE_COMPONENTS);
+    if ($flags & self::WE_HAVE_INSTRUCTIONS) {
+      $numInstr = $font->readUInt16();
+      $instr = $font->read($numInstr);
+      $this->components[count($this->components) - 1]->instructions = pack('n', $numInstr) . $instr;
+    }
   }
 
   function encode() {
@@ -171,6 +176,8 @@ class OutlineComposite extends Outline {
 
       if ($_i < count($this->components) - 1) {
         $flags |= self::MORE_COMPONENTS;
+      } elseif($_component->instructions !== null) {
+        $flags |= self::WE_HAVE_INSTRUCTIONS;
       }
 
       $size += $font->writeUInt16($flags);
@@ -212,6 +219,10 @@ class OutlineComposite extends Outline {
         $size += $font->writeInt16($_component->c);
         $size += $font->writeInt16($_component->d);
       }
+    }
+
+    if($_component->instructions !== null) {
+      $size += $font->write($_component->instructions, strlen($_component->instructions));
     }
 
     return $size;

@@ -218,12 +218,12 @@ class File extends BinaryStream {
   function encode($tags = array()) {
     if (!self::$raw) {
       $tags = array_merge(array("head", "hhea", "cmap", "hmtx", "maxp", "glyf", "loca", "name", "post"), $tags);
+      $optionalTags = array("cvt ", "fpgm", "prep");
     }
     else {
       $tags = array_keys($this->directory);
     }
 
-    $num_tables = count($tags);
     $n          = 16; // @todo
 
     Font::d("Tables : " . implode(", ", $tags));
@@ -238,6 +238,13 @@ class File extends BinaryStream {
 
       $entries[$tag] = $this->directory[$tag];
     }
+    foreach ($optionalTags as $tag) {
+      if (isset($this->directory[$tag])) {
+        $entries[$tag] = $this->directory[$tag];
+      }
+    }
+
+    $num_tables = count($entries);
 
     $this->header->data["numTables"] = $num_tables;
     $this->header->encode();
