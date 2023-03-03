@@ -37,6 +37,7 @@ $font->saveAdobeFontMetrics('fontfile.ufm');
 ### Create a font subset
 ```
 $font = FontLib\Font::load('fontfile.ttf');
+$font->parse();
 $font->setSubset("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ.:,;' (!?)+-*/== 1234567890"); // characters to include
 $font->reduce();
 touch('fontfile.subset.ttf');
