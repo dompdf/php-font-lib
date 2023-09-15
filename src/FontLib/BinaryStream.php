@@ -215,7 +215,10 @@ class BinaryStream {
   }
 
   public function readInt16() {
-    $a = unpack("nn", $this->read(2));
+    $data = $this->read(2);
+    if (!$data) return null;
+
+    $a = unpack("nn", $data);
     $v = $a["n"];
 
     if ($v >= 0x8000) {
