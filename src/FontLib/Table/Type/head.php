@@ -43,4 +43,9 @@ class head extends Table {
       throw new Exception("Incorrect magic number (" . dechex($this->data["magicNumber"]) . ")");
     }
   }
+
+  function _encode() {
+    $this->data["checkSumAdjustment"] = 0;
+    return parent::_encode();
+  }
 }
