@@ -202,7 +202,7 @@ class cmap extends Table {
       $prevGid  = $gid;
     }
 
-    $segments[][] = array(0xFFFF, 0xFFFF);
+    $segments[][] = array(0xFFFF, null);
 
     $startCode = array();
     $endCode   = array();
