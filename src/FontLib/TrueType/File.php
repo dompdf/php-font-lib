@@ -239,8 +239,13 @@ class File extends BinaryStream {
     }
 
     $num_tables = count($entries);
+    $exponent = floor(log($num_tables, 2));
+    $power_of_two = pow(2, $exponent);
 
     $this->header->data["numTables"] = $num_tables;
+    $this->header->data["searchRange"] = $power_of_two * 16;
+    $this->header->data["entrySelector"] = log($power_of_two, 2);
+    $this->header->data["rangeShift"] = $num_tables * 16 - $this->header->data["searchRange"];
     $this->header->encode();
 
     $directory_offset = $this->pos();
