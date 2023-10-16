@@ -49,20 +49,8 @@ class DirectoryEntry extends BinaryStream {
       $data = str_pad($data, $len + (4 - $mod), "\0");
     }
 
-    $len = mb_strlen($data, '8bit');
-
-    $hi = 0x0000;
-    $lo = 0x0000;
-
-    for ($i = 0; $i < $len; $i += 4) {
-      $hi += (ord($data[$i]) << 8) + ord($data[$i + 1]);
-      $lo += (ord($data[$i + 2]) << 8) + ord($data[$i + 3]);
-      $hi += $lo >> 16;
-      $lo = $lo & 0xFFFF;
-      $hi = $hi & 0xFFFF;
-    }
-
-    return ($hi << 8) + $lo;
+    $table = unpack("N*", $data);
+    return array_sum($table);
   }
 
   function __construct(File $font) {
