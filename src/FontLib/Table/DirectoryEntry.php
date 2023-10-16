@@ -81,6 +81,14 @@ class DirectoryEntry extends BinaryStream {
     $this->offset = $table_offset;
     $table_length = $data->encode();
 
+    $font->seek($table_offset + $table_length);
+    $pad = 0;
+    $mod = $table_length % 4;
+    if ($mod != 0) {
+      $pad = 4 - $mod;
+      $font->write(str_pad("", $pad, "\0"), $pad);
+    }
+
     $font->seek($table_offset);
     $table_data = $font->read($table_length);
 
@@ -93,7 +101,7 @@ class DirectoryEntry extends BinaryStream {
 
     Font::d("Bytes written = $table_length");
 
-    $font->seek($table_offset + $table_length);
+    $font->seek($table_offset + $table_length + $pad);
   }
 
   /**
