@@ -14,7 +14,8 @@ Usage Example
 -------------
 
 ### Base font information
-```
+
+```php
 $font = \FontLib\Font::load('fontfile.ttf');
 $font->parse();  // for getFontWeight() to work this call must be done first!
 echo $font->getFontName() .'<br>';
@@ -28,14 +29,16 @@ $font->close();
 ```
 
 ### Font Metrics Generation
-```
+
+```php
 $font = FontLib\Font::load('fontfile.ttf');
 $font->parse();
 $font->saveAdobeFontMetrics('fontfile.ufm');
 ```
 
 ### Create a font subset
-```
+
+```php
 $font = FontLib\Font::load('fontfile.ttf');
 $font->parse();
 $font->setSubset("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ.:,;' (!?)+-*/== 1234567890"); // characters to include
