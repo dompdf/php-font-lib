@@ -125,6 +125,10 @@ class cmap extends Table {
           }
 
           for ($c = $c1; $c <= $c2; $c++) {
+            if ($c === 0xFFFF) {
+              continue;
+            }
+
             if ($ro == 0) {
               $gid = ($c + $d) & 0xFFFF;
             }
@@ -132,15 +136,17 @@ class cmap extends Table {
               $offset = ($c - $c1) * 2 + $ro;
               $offset = $ro_start + 2 * $i + $offset;
 
-              $font->seek($offset);
-              $gid = $font->readUInt16();
+              $gid = 0;
+              if ($font->seek($offset) === true) {
+                $gid = $font->readUInt16();
+              }
 
               if ($gid != 0) {
                 $gid = ($gid + $d) & 0xFFFF;
               }
             }
 
-            if ($gid > 0) {
+            if ($gid >= 0) {
               $glyphIndexArray[$c] = $gid;
             }
           }
