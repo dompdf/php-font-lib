@@ -143,7 +143,16 @@ class glyf extends Table {
     $length = 0;
     foreach ($subset as $gid) {
       $loca[] = $length;
-      $length += $data[$gid]->encode();
+
+      $bytes = $data[$gid]->encode();
+
+      $pad = 0;
+      $mod = $bytes % 4;
+      if ($mod != 0) {
+        $pad = 4 - $mod;
+        $font->write(str_pad("", $pad, "\0"), $pad);
+      }
+      $length += $bytes + $pad;
     }
 
     $loca[]                             = $length; // dummy loca
