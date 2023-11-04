@@ -35,8 +35,14 @@ class hmtx extends Table {
     }
 
     if ($numOfLongHorMetrics < $numGlyphs) {
-      $lastWidth = end($data);
-      $data      = array_pad($data, $numGlyphs, $lastWidth);
+      $lastWidth = end($data)[0];
+      $numLeft   = $numGlyphs - $numOfLongHorMetrics;
+      $metrics   = $font->readUInt16Many($numLeft);
+      for($i = 0; $i < $numLeft; $i++) {
+        $gid             = $numOfLongHorMetrics + $i;
+        $leftSideBearing = isset($metrics[$i]) ? $metrics[$i] : 0;
+        $data[$gid]      = array($lastWidth, $leftSideBearing);
+      }
     }
 
     $this->data = $data;
