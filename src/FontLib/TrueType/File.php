@@ -217,8 +217,7 @@ class File extends BinaryStream {
 
   function encode($tags = array()) {
     if (!self::$raw) {
-      $tags = array_merge(array("head", "hhea", "cmap", "hmtx", "maxp", "glyf", "loca", "name", "post"), $tags);
-      $optionalTags = array("cvt ", "fpgm", "prep");
+      $tags = array_merge(array("head", "hhea", "cmap", "hmtx", "maxp", "glyf", "loca", "name", "post", "cvt ", "fpgm", "prep"), $tags);
     }
     else {
       $tags = array_keys($this->directory);
@@ -237,11 +236,6 @@ class File extends BinaryStream {
       }
 
       $entries[$tag] = $this->directory[$tag];
-    }
-    foreach ($optionalTags as $tag) {
-      if (isset($this->directory[$tag])) {
-        $entries[$tag] = $this->directory[$tag];
-      }
     }
 
     $num_tables = count($entries);
