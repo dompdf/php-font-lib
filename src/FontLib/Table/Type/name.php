@@ -150,11 +150,49 @@ class name extends Table {
       $records[] = $record;
     }
 
+    $system_encodings = mb_list_encodings();
+    $system_encodings = array_change_key_case(array_fill_keys($system_encodings, true), CASE_UPPER);
+    
     $names = array();
     foreach ($records as $record) {
       $font->seek($tableOffset + $data["stringOffset"] + $record->offset);
-      $s                      = $font->read($record->length);
-      $record->string         = Font::UTF16ToUTF8($s);
+      $record->stringRaw = $font->read($record->length);
+
+      $encoding = null;
+      switch ($record->platformID) {
+        case 3:
+          switch ($record->platformSpecificID) {
+            case 2:
+              if (\array_key_exists("SJIS", $system_encodings)) {
+                $encoding = "SJIS";
+              }
+              break;
+            case 3:
+              if (\array_key_exists("GB18030", $system_encodings)) {
+                $encoding = "GB18030";
+              }
+              break;
+            case 4:
+              if (\array_key_exists("BIG-5", $system_encodings)) {
+                $encoding = "BIG-5";
+              }
+              break;
+            case 5:
+              if (\array_key_exists("UHC", $system_encodings)) {
+                $encoding = "UHC";
+              }
+              break;
+          }
+          break;
+      }
+      if ($encoding === null) {
+        $encoding = "UTF-16";
+      }
+
+      $record->string = mb_convert_encoding($record->stringRaw, "UTF-8", $encoding);
+      if (strpos($record->string, "\0") !== false) {
+        $record->string = str_replace("\0", "", $record->string);
+      }
       $names[$record->nameID] = $record;
     }
 
@@ -168,22 +206,33 @@ class name extends Table {
 
     /** @var nameRecord[] $records */
     $records       = $this->data["records"];
-    $count_records = count($records);
+    $count_records = \count($records);
 
     $this->data["count"]        = $count_records;
-    $this->data["stringOffset"] = 6 + $count_records * 12; // 6 => uint16 * 3, 12 => sizeof self::$record_format
+    $this->data["stringOffset"] = 6 + ($count_records * 12); // 6 => uint16 * 3, 12 => sizeof self::$record_format
 
     $length = $font->pack(self::$header_format, $this->data);
 
     $offset = 0;
+
+    /** @var nameRecord[] $records_to_encode */
+    $records_to_encode = array();
     foreach ($records as $record) {
-      $record->length = mb_strlen($record->getUTF16(), "8bit");
-      $record->offset = $offset;
-      $offset += $record->length;
-      $length += $font->pack(nameRecord::$format, (array)$record);
+      $encoded_record = new nameRecord();
+      $encoded_record->platformID = 3;
+      $encoded_record->platformSpecificID = 1;
+      $encoded_record->languageID = $record->languageID;
+      $encoded_record->nameID = $record->nameID;
+      $encoded_record->offset = $offset;
+      $encoded_record->string = $record->string;
+      $encoded_record->length = mb_strlen($encoded_record->getUTF16(), "8bit");
+      $records_to_encode[] = $encoded_record;
+
+      $offset += $encoded_record->length;
+      $length += $font->pack(nameRecord::$format, (array)$encoded_record);
     }
 
-    foreach ($records as $record) {
+    foreach ($records_to_encode as $record) {
       $str = $record->getUTF16();
       $length += $font->write($str, mb_strlen($str, "8bit"));
     }
