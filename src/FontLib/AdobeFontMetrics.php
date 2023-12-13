@@ -75,12 +75,49 @@ class AdobeFontMetrics {
 
     if (isset($hhea["ascent"])) {
       $this->addPair("FontHeightOffset", $font->normalizeFUnit($hhea["lineGap"]));
-      $this->addPair("Ascender", $font->normalizeFUnit($hhea["ascent"]));
-      $this->addPair("Descender", $font->normalizeFUnit($hhea["descent"]));
     }
     else {
       $this->addPair("FontHeightOffset", $font->normalizeFUnit($os2["typoLineGap"]));
+    }
+
+    $glyf = $font->getData("glyf");
+    $glyphIndexArray = $font->getUnicodeCharMap();
+
+    // capHeight is based on capital H
+    if (\array_key_exists(72, $glyphIndexArray)) {
+      $upperH = $glyf[$glyphIndexArray[72]];
+      $upperH->parseData();
+      $this->addPair("CapHeight", $font->normalizeFUnit($upperH->yMax));
+    }
+
+    // xHeight is based on lowercase x
+    if (\array_key_exists(120, $glyphIndexArray)) {
+      $lowerX = $glyf[$glyphIndexArray[120]];
+      $lowerX->parseData();
+      $this->addPair("XHeight", $font->normalizeFUnit($lowerX->yMax));
+    }
+
+    // ascender is based on lowercase d
+    if (\array_key_exists(100, $glyphIndexArray)) {
+      $lowerD = $glyf[$glyphIndexArray[100]];
+      $lowerD->parseData();
+      $this->addPair("Ascender", $font->normalizeFUnit($lowerD->yMax));
+    } elseif (isset($hhea["ascent"])) {
+      $this->addPair("Ascender", $font->normalizeFUnit($hhea["ascent"]));
+    }
+    else {
       $this->addPair("Ascender", $font->normalizeFUnit($os2["typoAscender"]));
+    }
+
+    // descender is based on lowercase p
+    if (\array_key_exists(112, $glyphIndexArray)) {
+      $lowerP = $glyf[$glyphIndexArray[112]];
+      $lowerP->parseData();
+      $this->addPair("Descender", $font->normalizeFUnit($lowerP->yMin));
+    } elseif (isset($hhea["ascent"])) {
+      $this->addPair("Descender", $font->normalizeFUnit($hhea["descent"]));
+    }
+    else {
       $this->addPair("Descender", -abs($font->normalizeFUnit($os2["typoDescender"])));
     }
 
@@ -91,8 +128,6 @@ class AdobeFontMetrics {
       $font->normalizeFUnit($head["xMax"]),
       $font->normalizeFUnit($head["yMax"]),
     ));
-
-    $glyphIndexArray = $font->getUnicodeCharMap();
 
     if ($glyphIndexArray) {
       $hmtx  = $font->getData("hmtx");
