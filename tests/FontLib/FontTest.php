@@ -22,16 +22,30 @@ class FontTest extends TestCase
         }
     }
 
-    public function testLoadTTFFontSuccessfully()
+    public function testLoadTTFFont()
     {
-        $trueTypeFont = Font::load('sample-fonts/IntelClear-Light.ttf');
+        $trueTypeFont = Font::load('tests/resources/fonts/ahem/ahem.ttf');
 
         $this->assertInstanceOf('FontLib\TrueType\File', $trueTypeFont);
     }
 
-    public function test12CmapFormat()
+    public function testGetFontInfoTTF()
     {
-        $trueTypeFont = Font::load('sample-fonts/NotoSansShavian-Regular.ttf');
+        $font = Font::load('tests/resources//fonts/ahem/ahem.ttf');
+        $font->parse();
+        $this->assertSame('Ahem', $font->getFontName());
+        $this->assertSame('Regular', $font->getFontSubfamily());
+        $this->assertSame('Version 1.50 Ahem', $font->getFontSubfamilyID());
+        $this->assertSame('Ahem', $font->getFontFullName());
+        $this->assertSame('Version 1.50', $font->getFontVersion());
+        $this->assertSame(400, $font->getFontWeight());
+        $this->assertSame('Ahem', $font->getFontPostscriptName());
+        $this->assertTrue($font->close());
+    }
+
+    public function testTTFCmap()
+    {
+        $trueTypeFont = Font::load('tests/resources/fonts/noto/NotoSansShavian-Regular.ttf');
 
         $trueTypeFont->parse();
 
@@ -40,17 +54,16 @@ class FontTest extends TestCase
         $cmapFormat4Table = $cmapTable[0];
 
         $this->assertEquals(4, $cmapFormat4Table['format']);
-        $this->assertEquals(6, $cmapFormat4Table['segCount']);
+        $this->assertEquals(51, $cmapFormat4Table['segCount']);
         $this->assertEquals($cmapFormat4Table['segCount'], count($cmapFormat4Table['startCode']));
         $this->assertEquals($cmapFormat4Table['segCount'], count($cmapFormat4Table['endCode']));
 
         $cmapFormat12Table = $cmapTable[1];
 
         $this->assertEquals(12, $cmapFormat12Table['format']);
-        $this->assertEquals(6, $cmapFormat12Table['ngroups']);
-        $this->assertEquals(6, count($cmapFormat12Table['startCode']));
-        $this->assertEquals(6, count($cmapFormat12Table['endCode']));
-        $this->assertEquals(53, count($cmapFormat12Table['glyphIndexArray']));
+        $this->assertEquals(294, $cmapFormat12Table['ngroups']);
+        $this->assertEquals(294, count($cmapFormat12Table['startCode']));
+        $this->assertEquals(294, count($cmapFormat12Table['endCode']));
+        $this->assertEquals(383, count($cmapFormat12Table['glyphIndexArray']));
     }
-
 }
