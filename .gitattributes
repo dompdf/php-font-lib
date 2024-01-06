@@ -14,6 +14,7 @@
 /.github            export-ignore
 /.gitattributes     export-ignore
 /.gitignore         export-ignore
+/SECURITY.md        export-ignore
 /phpunit.xml.dist   export-ignore
 /sample-fonts       export-ignore
 /tests              export-ignore
