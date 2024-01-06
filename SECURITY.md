@@ -3,7 +3,7 @@
 ## Supported Versions
 
 Because of limited resources and general compatibility 
-between versions only the [latest release](https://github.com/dompdf/php-font-lib/releases) of Dompdf 
+between versions only the [latest release](https://github.com/dompdf/php-font-lib/releases) of FontLib 
 is actively supported.
 
 ## Reporting a Vulnerability
