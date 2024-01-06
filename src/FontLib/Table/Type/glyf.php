@@ -48,7 +48,7 @@ class glyf extends Table {
     return array_unique(array_merge($gids, $glyphIDs));
   }
 
-  public function toHTML() {
+  public function toHTML($n = 500) {
     $max  = 160;
     $font = $this->getFont();
 
@@ -73,8 +73,6 @@ class glyf extends Table {
       $width  = round($width / $ratio);
       $height = round($height / $ratio);
     }
-
-    $n = 500;
 
     $s = "<h3>" . "Only the first $n simple glyphs are shown (" . count($this->data) . " total)
     <div class='glyph-view simple'>Simple glyph</div>
@@ -110,6 +108,11 @@ class glyf extends Table {
       $char = isset($glyphIndexArray[$g]) ? $glyphIndexArray[$g] : 0;
       $name = isset($names[$g]) ? $names[$g] : sprintf("uni%04x", $char);
       $char = $char ? "&#{$glyphIndexArray[$g]};" : "";
+
+      if ($char === "" && empty($shape["SVGContours"])) {
+        $n++;
+        continue;
+      }
 
       $s .= "<div class='glyph-view $type' id='glyph-$g'>
               <span class='glyph-id'>$g</span>
