@@ -124,7 +124,7 @@ class cmap extends Table {
             } else {
               for ($index = 0; $index < $subHeader["entryCount"]; $index++) {
                 $c = null;
-                    $lowByte = $subHeader["firstCode"] + $index;
+                $lowByte = $subHeader["firstCode"] + $index;
                 $c = (($highByte & 0xFF) << 8) | ($lowByte & 0xFF);
                 $glyphId = $glyphIdArray[$subHeader["glyphIdArrayOffset"]][$index];
                 if ($glyphId === 0) {
