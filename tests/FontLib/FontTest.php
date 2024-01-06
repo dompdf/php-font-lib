@@ -31,7 +31,7 @@ class FontTest extends TestCase
 
     public function testGetFontInfoTTF()
     {
-        $font = Font::load('tests/resources//fonts/ahem/ahem.ttf');
+        $font = Font::load('tests/resources/fonts/ahem/ahem.ttf');
         $font->parse();
         $this->assertSame('Ahem', $font->getFontName());
         $this->assertSame('Regular', $font->getFontSubfamily());
