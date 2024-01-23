@@ -310,11 +310,11 @@ class File extends BinaryStream {
 
     /** @var glyf $glyf */
     $glyf = $this->getTableObject("glyf");
-    $gids = $glyf->getGlyphIDs($gids);
-
-    sort($gids);
-
-    $this->glyph_subset = $gids;
+    if ($glyf) {
+      $gids = $glyf->getGlyphIDs($gids);
+      sort($gids);
+      $this->glyph_subset = $gids;
+    }
     $this->glyph_all    = array_values($glyphIndexArray); // FIXME
   }
 
@@ -443,7 +443,10 @@ class File extends BinaryStream {
    * @return Table
    */
   public function getTableObject($name) {
-    return $this->data[$name];
+    if (\array_key_exists($name, $this->data)) {
+      return $this->data[$name];
+    }
+    return null;
   }
 
   public function setTableObject($name, Table $data) {
