@@ -160,8 +160,16 @@ class name extends Table {
 
       $encoding = null;
       switch ($record->platformID) {
+        case 1:
+          $encoding = mb_detect_encoding($record->stringRaw, array('UTF-8', 'ASCII', 'GB2312', 'GB18030', 'GBK', 'SJIS', 'BIG-5'));
+          break;
         case 3:
           switch ($record->platformSpecificID) {
+            case 1:
+              if (\array_key_exists("GBK", $system_encodings)) {
+                $encoding = "GBK";
+              }
+              break;
             case 2:
               if (\array_key_exists("SJIS", $system_encodings)) {
                 $encoding = "SJIS";
@@ -185,19 +193,19 @@ class name extends Table {
           }
           break;
       }
-      if ($encoding === null) {
+      if ($encoding === null || $encoding === false) {
         $encoding = "UTF-16";
       }
 
       $record->string = mb_convert_encoding($record->stringRaw, "UTF-8", $encoding);
+
       if (strpos($record->string, "\0") !== false) {
         $record->string = str_replace("\0", "", $record->string);
       }
-      $names[$record->nameID] = $record;
+      $names["{$record->platformID},{$record->platformSpecificID},{$record->languageID},{$record->nameID}"] = $record;
     }
 
     $data["records"] = $names;
-
     $this->data = $data;
   }
 
