@@ -165,11 +165,6 @@ class name extends Table {
           break;
         case 3:
           switch ($record->platformSpecificID) {
-            case 1:
-              if (\array_key_exists("GBK", $system_encodings)) {
-                $encoding = "GBK";
-              }
-              break;
             case 2:
               if (\array_key_exists("SJIS", $system_encodings)) {
                 $encoding = "SJIS";
