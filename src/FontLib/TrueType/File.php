@@ -470,6 +470,14 @@ class File extends BinaryStream {
     }
   }
 
+  public function setData($name, $key, $value) {
+    if (!$key) {
+      $this->data[$name]->data = $value;
+    } else {
+      $this->data[$name]->data[$key] = $value;
+    }
+  }
+
   function addDirectoryEntry(DirectoryEntry $entry) {
     $this->directory[$entry->tag] = $entry;
   }

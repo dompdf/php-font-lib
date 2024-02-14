@@ -85,6 +85,15 @@ class File extends \FontLib\TrueType\File {
     return $uint32 >> 16 & 0x0000FFFF | $uint32 << 16 & 0xFFFF0000;
   }
 
+
+  function setData($name, $key, $value) {
+    if (!$key) {
+      $this->header->data = $value;
+    } else {
+      $this->header->data[$key] = $value;
+    }
+  }
+
   /**
    * Get font copyright
    *
