@@ -18,6 +18,7 @@ class BinaryStream {
    * @var resource The file pointer
    */
   protected $f;
+  protected $f2;
 
   const uint8        = 1;
   const  int8        = 2;
@@ -66,6 +67,12 @@ class BinaryStream {
       throw new \Exception("Unknown file open mode");
     }
 
+    if ($this->f !== null && $this->f !== false) {
+      if ($this->f2 !== null && $this->f2 !== false) {
+        fclose($this->f2);
+      }
+      $this->f2 = $this->f;
+    }
     $this->f = fopen($filename, $mode);
 
     return $this->f != false;
@@ -75,7 +82,18 @@ class BinaryStream {
    * Close the internal file pointer
    */
   public function close() {
+    if ($this->f2 !== null && $this->f2 !== false) {
+      fclose($this->f2);
+    }
     return fclose($this->f) != false;
+  }
+
+  public function revert() {
+    if ($this->f2 !== null) {
+      fclose($this->f);
+      $this->f = $this->f2;
+      $this->f2 = null;
+    }
   }
 
   /**
