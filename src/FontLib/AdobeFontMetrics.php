@@ -54,7 +54,8 @@ class AdobeFontMetrics {
     $this->addPair("EncodingScheme", $encoding_scheme);
 
     $records = $font->getData("name", "records");
-    foreach ($records as $id => $record) {
+    foreach ($records as $uniqueIdentifier => $record) {
+      $id = end(explode(',', $uniqueIdentifier));
       if (!isset(name::$nameIdCodes[$id]) || preg_match("/[\r\n]/", $record->string)) {
         continue;
       }
