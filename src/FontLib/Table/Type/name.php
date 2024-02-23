@@ -161,28 +161,28 @@ class name extends Table {
       $encoding = null;
       switch ($record->platformID) {
         case 1:
-          $encoding = mb_detect_encoding($record->stringRaw, array('UTF-8', 'ASCII', 'GB2312', 'GB18030', 'GBK', 'SJIS', 'BIG-5'));
+          $encoding = mb_detect_encoding($record->stringRaw, array("UTF-8", "ASCII", "GB2312", "GB18030", "GBK", "SJIS", "BIG-5"));
           break;
         case 3:
           switch ($record->platformSpecificID) {
             case 2:
               if (\array_key_exists("SJIS", $system_encodings)) {
-                $encoding = "SJIS";
+                $encoding = mb_detect_encoding($record->stringRaw, array("SJIS", "UTF-16", "UTF-8", "ASCII"));
               }
               break;
             case 3:
               if (\array_key_exists("GB18030", $system_encodings)) {
-                $encoding = "GB18030";
+                $encoding = mb_detect_encoding($record->stringRaw, array("GB18030", "UTF-16", "UTF-8", "ASCII"));
               }
               break;
             case 4:
               if (\array_key_exists("BIG-5", $system_encodings)) {
-                $encoding = "BIG-5";
+                $encoding = mb_detect_encoding($record->stringRaw, array("BIG-5", "UTF-16", "UTF-8", "ASCII"));
               }
               break;
             case 5:
               if (\array_key_exists("UHC", $system_encodings)) {
-                $encoding = "UHC";
+                $encoding = mb_detect_encoding($record->stringRaw, array("UHC", "UTF-16", "UTF-8", "ASCII"));
               }
               break;
           }
