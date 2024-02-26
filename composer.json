@@ -1,13 +1,13 @@
 {
-    "name": "phenx/php-font-lib",
+    "name": "dompdf/php-font-lib",
     "type": "library",
     "description": "A library to read, parse, export and make subsets of different types of font files.",
-    "homepage": "https://github.com/PhenX/php-font-lib",
+    "homepage": "https://github.com/dompdf/php-font-lib",
     "license": "LGPL-2.1-or-later",
     "authors": [
         {
-            "name": "Fabien Ménager",
-            "email": "fabien.menager@gmail.com"
+            "name": "The FontLib Community",
+            "homepage": "https://github.com/dompdf/php-font-lib/blob/master/AUTHORS.md"
         }
     ],
     "autoload": {
