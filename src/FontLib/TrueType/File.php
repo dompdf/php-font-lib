@@ -222,8 +222,12 @@ class File extends BinaryStream {
 
   function getUnicodeCharMap() {
     $subtable = null;
-    foreach ($this->getData("cmap", "subtables") as $_subtable) {
-      if ($_subtable["platformID"] == 0 || ($_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1)) {
+    $subtables = $this->getData("cmap", "subtables");
+    for ($i = count($subtables) - 1; $i >= 0; $i--) {
+      $_subtable = $subtables[$i];
+      $platformID = $_subtable["platformID"];
+      $platformSpecificId = $_subtable["platformSpecificID"];
+      if (($platformID == 0 && $platformSpecificId != 5) || ($platformID == 3 && in_array($platformSpecificId, [0, 1, 10]))) {
         $subtable = $_subtable;
         break;
       }
@@ -235,7 +239,7 @@ class File extends BinaryStream {
 
     $system_encodings = mb_list_encodings();
     $system_encodings = array_change_key_case(array_fill_keys($system_encodings, true), CASE_UPPER);
-    foreach ($this->getData("cmap", "subtables") as $_subtable) {
+    foreach ($subtables as $_subtable) {
       $encoding = null;
       switch ($_subtable["platformID"]) {
         case 3:
