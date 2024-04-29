@@ -24,6 +24,7 @@
         "bin-dir": "bin"
     },
     "require": {
+        "php": "^7.1 || ^8.0",
         "ext-mbstring": "*"
     },
     "require-dev": {
