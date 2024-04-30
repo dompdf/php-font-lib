@@ -168,7 +168,6 @@ class File extends BinaryStream {
 
   function getTable() {
     $this->parseTableEntries();
-
     return $this->directory;
   }
 
@@ -391,7 +390,6 @@ class File extends BinaryStream {
     if (!empty($this->directory)) {
       return;
     }
-
     if (empty($this->header->data["numTables"])) {
       return;
     }
@@ -471,6 +469,14 @@ class File extends BinaryStream {
     }
   }
 
+  public function setData($name, $key, $value) {
+    if (!$key) {
+      $this->data[$name]->data = $value;
+    } else {
+      $this->data[$name]->data[$key] = $value;
+    }
+  }
+
   function addDirectoryEntry(DirectoryEntry $entry) {
     $this->directory[$entry->tag] = $entry;
   }
@@ -503,8 +509,8 @@ class File extends BinaryStream {
    *
    * @return string|null
    */
-  function getFontCopyright() {
-    return $this->getNameTableString(name::NAME_COPYRIGHT);
+  function getFontCopyright($platformID, $platformSpecificID, $languageID) {
+    return $this->getNameTableString("{$platformID},{$platformSpecificID},{$languageID}," . name::NAME_COPYRIGHT);
   }
 
   /**
@@ -512,8 +518,8 @@ class File extends BinaryStream {
    *
    * @return string|null
    */
-  function getFontName() {
-    return $this->getNameTableString(name::NAME_NAME);
+  function getFontName($platformID, $platformSpecificID, $languageID) {
+    return $this->getNameTableString("{$platformID},{$platformSpecificID},{$languageID}," . name::NAME_NAME);
   }
 
   /**
@@ -521,8 +527,8 @@ class File extends BinaryStream {
    *
    * @return string|null
    */
-  function getFontSubfamily() {
-    return $this->getNameTableString(name::NAME_SUBFAMILY);
+  function getFontSubfamily($platformID, $platformSpecificID, $languageID) {
+    return $this->getNameTableString("{$platformID},{$platformSpecificID},{$languageID}," . name::NAME_SUBFAMILY);
   }
 
   /**
@@ -530,8 +536,8 @@ class File extends BinaryStream {
    *
    * @return string|null
    */
-  function getFontSubfamilyID() {
-    return $this->getNameTableString(name::NAME_SUBFAMILY_ID);
+  function getFontSubfamilyID($platformID, $platformSpecificID, $languageID) {
+    return $this->getNameTableString("{$platformID},{$platformSpecificID},{$languageID}," . name::NAME_SUBFAMILY_ID);
   }
 
   /**
@@ -539,8 +545,8 @@ class File extends BinaryStream {
    *
    * @return string|null
    */
-  function getFontFullName() {
-    return $this->getNameTableString(name::NAME_FULL_NAME);
+  function getFontFullName($platformID, $platformSpecificID, $languageID) {
+    return $this->getNameTableString("{$platformID},{$platformSpecificID},{$languageID}," . name::NAME_FULL_NAME);
   }
 
   /**
@@ -548,8 +554,8 @@ class File extends BinaryStream {
    *
    * @return string|null
    */
-  function getFontVersion() {
-    return $this->getNameTableString(name::NAME_VERSION);
+  function getFontVersion($platformID, $platformSpecificID, $languageID) {
+    return $this->getNameTableString("{$platformID},{$platformSpecificID},{$languageID}," . name::NAME_VERSION);
   }
 
   /**
@@ -566,8 +572,8 @@ class File extends BinaryStream {
    *
    * @return string|null
    */
-  function getFontPostscriptName() {
-    return $this->getNameTableString(name::NAME_POSTSCRIPT_NAME);
+  function getFontPostscriptName($platformID, $platformSpecificID, $languageID) {
+    return $this->getNameTableString("{$platformID},{$platformSpecificID},{$languageID}," . name::NAME_POSTSCRIPT_NAME);
   }
 
   function reduce() {
