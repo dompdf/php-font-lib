@@ -100,7 +100,7 @@ class File extends BinaryStream {
     "Ccaron", "ccaron", "dmacron"
   );
 
-  private function uniord (string $c, string $encoding = null) {
+  private function uniord (string $c, ?string $encoding = null) {
     if (function_exists("mb_ord")) {
       if (PHP_VERSION_ID < 80000 && $encoding === null) {
           // in PHP < 8 the encoding argument, if supplied, must be a valid encoding
