@@ -20,14 +20,11 @@
             "FontLib\\Tests\\": "tests/FontLib"
         }
     },
-    "config": {
-        "bin-dir": "bin"
-    },
     "require": {
         "php": "^7.1 || ^8.0",
         "ext-mbstring": "*"
     },
     "require-dev": {
-        "symfony/phpunit-bridge" : "^3 || ^4 || ^5 || ^6"
+        "phpunit/phpunit": "^7.5 || ^8 || ^9 || ^10 || ^11"
     }
 }

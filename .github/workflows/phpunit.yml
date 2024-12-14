@@ -1,43 +1,38 @@
-name: PHPUnit tests
+name: "Run unit tests"
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  - push
+  - pull_request
+  - workflow_dispatch
+
+env:
+  COMPOSER_MEMORY_LIMIT: -1
 
 jobs:
-  php-version:
-
+  test:
+    name: "Build"
     runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: false
+      max-parallel: 12
       matrix:
-        php-version:
-          - "7.1"
-          - "7.2"
-          - "7.3"
-          - "7.4"
-          - "8.0"
-          - "8.1"
-          - "8.2"
-          - "8.3"
-          - "8.4"
+        php: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
+        package-release: [dist]
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - uses: actions/checkout@v4
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: exif,json,mbstring,dom
 
-        - name: Install PHP
-          uses: "shivammathur/setup-php@v2"
-          with:
-            php-version: "${{ matrix.php-version }}"
-            coverage: "none"
-            ini-values: "zend.assertions=1"
+      - name: Install composer dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.package-release }}
 
-        - name: Install Composer dependencies
-          run: composer install --no-progress --ansi
-
-        - name: Run tests ${{ matrix.php-version }}
-          run: SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT=1 bin/simple-phpunit --color=always
+      - name: Run unit tests
+        run: ./vendor/bin/phpunit
