@@ -35,19 +35,16 @@ class gsub extends Table {
       "lookupList"  => null,
     );
 
-    // ScriptList
     if ($header["scriptList"]) {
       $font->seek($offset + $header["scriptList"]);
       $data["scriptList"] = $this->parseScriptList($font, $offset + $header["scriptList"]);
     }
 
-    // FeatureList
     if ($header["featureList"]) {
       $font->seek($offset + $header["featureList"]);
       $data["featureList"] = $this->parseFeatureList($font, $offset + $header["featureList"]);
     }
 
-    // LookupList
     if ($header["lookupList"]) {
       $font->seek($offset + $header["lookupList"]);
       $data["lookupList"] = $this->parseLookupList($font, $offset + $header["lookupList"]);
@@ -136,13 +133,40 @@ class gsub extends Table {
       $ligSets[] = $this->parseLigatureSet($font, $subtableBase + $offset);
     }
 
+    $font->seek($subtableBase + $coverageOffset);
+    $coverageGlyphs = $this->parseCoverage($font);
+
     return [
       "format"         => $substFormat,
       "coverageOffset" => $coverageOffset,
+      "coverageGlyphs" => $coverageGlyphs,
       "ligSetCount"    => $ligSetCount,
       "ligSets"        => $ligSets,
     ];
   }
+
+  private function parseCoverage($font) {
+    $coverageFormat = $font->readUInt16();
+    $glyphs = [];
+    if ($coverageFormat == 1) {
+        $glyphCount = $font->readUInt16();
+        for ($i = 0; $i < $glyphCount; $i++) {
+            $glyphs[] = $font->readUInt16();
+        }
+    } elseif ($coverageFormat == 2) {
+        $rangeCount = $font->readUInt16();
+        for ($i = 0; $i < $rangeCount; $i++) {
+            $startGlyph = $font->readUInt16();
+            $endGlyph   = $font->readUInt16();
+            $startCoverageIndex = $font->readUInt16(); // can be ignored for mapping
+            for ($g = $startGlyph; $g <= $endGlyph; $g++) {
+                $glyphs[] = $g;
+            }
+        }
+    }
+    return $glyphs;
+}
+
 
   private function parseLigatureSet($font, $baseOffset) {
     $ligatureCount  = $font->readUInt16();
