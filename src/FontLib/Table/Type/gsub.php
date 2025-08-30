@@ -53,7 +53,7 @@ class gsub extends Table {
     $this->data = $data;
   }
 
-  private function parseScriptList($font, $baseOffset) {
+  private function parseScriptList($font) {
     $scriptCount = $font->readUInt16();
     $records = [];
     for ($i = 0; $i < $scriptCount; $i++) {
@@ -64,7 +64,7 @@ class gsub extends Table {
     return ["scriptCount" => $scriptCount, "records" => $records];
   }
 
-  private function parseFeatureList($font, $baseOffset) {
+  private function parseFeatureList($font) {
     $featureCount = $font->readUInt16();
     $records = [];
     for ($i = 0; $i < $featureCount; $i++) {
@@ -112,9 +112,8 @@ class gsub extends Table {
     switch ($lookupType) {
       case 4:
         return $this->parseLigatureSubst($font, $baseOffset);
-      default:
-        return ["raw" => "Unsupported lookupType $lookupType"];
     }
+    return array("lookupType" => $lookupType, "unsupported" => true);
   }
 
   private function parseLigatureSubst($font, $subtableBase) {
@@ -158,7 +157,6 @@ class gsub extends Table {
         for ($i = 0; $i < $rangeCount; $i++) {
             $startGlyph = $font->readUInt16();
             $endGlyph   = $font->readUInt16();
-            $startCoverageIndex = $font->readUInt16(); // can be ignored for mapping
             for ($g = $startGlyph; $g <= $endGlyph; $g++) {
                 $glyphs[] = $g;
             }
@@ -194,10 +192,5 @@ class gsub extends Table {
       "compCount"     => $compCount,
       "components"    => $components,
     ];
-  }
-
-  function _encode() {
-    // This still needs to be implemented
-    throw new \Exception("Encoding GSUB not implemented yet.");
   }
 }
