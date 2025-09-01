@@ -118,9 +118,7 @@ class gsub extends Table {
 
   private function parseLigatureSubst($font, $subtableBase) {
     $substFormat   = $font->readUInt16();
-    if ($substFormat != 1) {
-      return ["format" => $substFormat, "unsupported" => true];
-    }
+    if ($substFormat != 1) return ["format" => $substFormat, "unsupported" => true];
 
     $coverageOffset = $font->readUInt16();
     $ligSetCount    = $font->readUInt16();
@@ -134,6 +132,10 @@ class gsub extends Table {
 
     $font->seek($subtableBase + $coverageOffset);
     $coverageGlyphs = $this->parseCoverage($font);
+
+    foreach ($ligSets as $i => &$ligSet) {
+        $ligSet['coverageGlyph'] = $coverageGlyphs[$i] ?? null;
+    }
 
     return [
       "format"         => $substFormat,
@@ -157,14 +159,14 @@ class gsub extends Table {
         for ($i = 0; $i < $rangeCount; $i++) {
             $startGlyph = $font->readUInt16();
             $endGlyph   = $font->readUInt16();
+            $startCoverageIndex = $font->readUInt16();
             for ($g = $startGlyph; $g <= $endGlyph; $g++) {
                 $glyphs[] = $g;
             }
         }
     }
     return $glyphs;
-}
-
+  }
 
   private function parseLigatureSet($font, $baseOffset) {
     $ligatureCount  = $font->readUInt16();
