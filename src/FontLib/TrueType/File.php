@@ -276,7 +276,7 @@ class File extends BinaryStream {
         return $glyphIndexArray;
       }
     }
-    
+
     return null;
   }
 
@@ -406,20 +406,26 @@ class File extends BinaryStream {
     return round($value * ($base / $this->getData("head", "unitsPerEm")));
   }
 
+  private function tableClass(string $name_canon): string {
+    $root = __NAMESPACE__;
+    $root = substr($root, 0, strrpos($root, '\\'));
+    return $root . '\\Table\\Type\\' . $name_canon;
+  }
+
   protected function readTable($tag) {
     $this->parseTableEntries();
 
     if (!self::$raw) {
       $name_canon = preg_replace("/[^a-z0-9]/", "", strtolower($tag));
 
-      $class = "FontLib\\Table\\Type\\$name_canon";
+      $class = $this->tableClass($name_canon);
 
       if (!isset($this->directory[$tag]) || !@class_exists($class)) {
         return;
       }
     }
     else {
-      $class = "FontLib\\Table\\Table";
+      $class = Table::class;
     }
 
     /** @var Table $table */
