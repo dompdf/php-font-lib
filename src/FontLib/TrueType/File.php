@@ -223,8 +223,7 @@ class File extends BinaryStream {
   function getUnicodeCharMap() {
     $subtable = null;
     $subtables = $this->getData("cmap", "subtables");
-    for ($i = count($subtables) - 1; $i >= 0; $i--) {
-      $_subtable = $subtables[$i];
+    foreach (array_reverse($subtables) as $_subtable) {
       $platformID = $_subtable["platformID"];
       $platformSpecificId = $_subtable["platformSpecificID"];
       if (($platformID == 0 && $platformSpecificId != 5) || ($platformID == 3 && in_array($platformSpecificId, [0, 1, 10]))) {
