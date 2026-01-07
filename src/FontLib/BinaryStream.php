@@ -161,7 +161,7 @@ class BinaryStream {
     $uint8 = $this->read(1);
 
     if ($uint8 === '') {
-      $uint8 = '0';
+      return 0;
     }
 
     return ord($uint8);
