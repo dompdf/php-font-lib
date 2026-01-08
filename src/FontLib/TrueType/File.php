@@ -405,7 +405,7 @@ class File extends BinaryStream {
       $entry = new $class($this);
       $entry->parse();
 
-      $this->directory[$entry->tag] = $entry;
+      $this->addDirectoryEntry($entry);
     }
   }
 
