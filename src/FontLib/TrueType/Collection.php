@@ -69,28 +69,34 @@ class Collection extends BinaryStream implements Iterator, Countable {
     return $this->collection[$fontId] = $font;
   }
 
+  #[\ReturnTypeWillChange]
   function current() {
     return $this->getFont($this->position);
   }
 
+  #[\ReturnTypeWillChange]
   function key() {
     return $this->position;
   }
 
+  #[\ReturnTypeWillChange]
   function next() {
     return ++$this->position;
   }
 
+  #[\ReturnTypeWillChange]
   function rewind() {
     $this->position = 0;
   }
 
+  #[\ReturnTypeWillChange]
   function valid() {
     $this->parse();
 
     return isset($this->collectionOffsets[$this->position]);
   }
 
+  #[\ReturnTypeWillChange]
   function count() {
     $this->parse();
 
