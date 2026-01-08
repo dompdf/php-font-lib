@@ -158,7 +158,11 @@ class BinaryStream {
   }
 
   public function readUInt8() {
-    return ord($this->read(1));
+    $byte = $this->read(1);
+    if ($byte === '') {
+      return 0;
+    }
+    return ord($byte);
   }
 
   public function readUInt8Many($count) {
