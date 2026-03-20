@@ -221,11 +221,21 @@ class File extends BinaryStream {
 
   function getUnicodeCharMap() {
     $subtable = null;
+    $subtableFmt12 = null;
     foreach ($this->getData("cmap", "subtables") as $_subtable) {
-      if ($_subtable["platformID"] == 0 || ($_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1)) {
-        $subtable = $_subtable;
-        break;
+      // Prefer Format 12 (full Unicode including SIP) over Format 4 (BMP only)
+      if (isset($_subtable["format"]) && $_subtable["format"] == 12 &&
+          ($_subtable["platformID"] == 0 || ($_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 10))) {
+        $subtableFmt12 = $_subtable;
       }
+      if ($subtable === null && ($_subtable["platformID"] == 0 || ($_subtable["platformID"] == 3 && $_subtable["platformSpecificID"] == 1))) {
+        $subtable = $_subtable;
+      }
+    }
+
+    // Use Format 12 if available (supports SIP characters U+10000+)
+    if ($subtableFmt12 && isset($subtableFmt12["glyphIndexArray"])) {
+      return $subtableFmt12["glyphIndexArray"];
     }
 
     if ($subtable) {
@@ -276,7 +286,7 @@ class File extends BinaryStream {
         return $glyphIndexArray;
       }
     }
-    
+
     return null;
   }
 

@@ -149,56 +149,56 @@ class cmap extends Table {
 
           $segCount             = $subtable["segCountX2"] / 2;
           $subtable["segCount"] = $segCount;
-  
+
           $endCode = $font->readUInt16Many($segCount);
-  
+
           $font->readUInt16(); // reservedPad
-  
+
           $startCode = $font->readUInt16Many($segCount);
           $idDelta   = $font->readInt16Many($segCount);
-  
+
           $ro_start      = $font->pos();
           $idRangeOffset = $font->readUInt16Many($segCount);
-  
+
           $glyphIndexArray = array();
           for ($i = 0; $i < $segCount; $i++) {
             $c1 = $startCode[$i];
             $c2 = $endCode[$i];
             $d  = $idDelta[$i];
             $ro = $idRangeOffset[$i];
-  
+
             if ($ro > 0) {
               $font->seek($subtable["offset"] + 2 * $i + $ro);
             }
-  
+
             for ($c = $c1; $c <= $c2; $c++) {
               if ($c === 0xFFFF) {
                 continue;
               }
-  
+
               if ($ro == 0) {
                 $gid = ($c + $d) & 0xFFFF;
               }
               else {
                 $offset = ($c - $c1) * 2 + $ro;
                 $offset = $ro_start + 2 * $i + $offset;
-  
+
                 $gid = 0;
                 if ($font->seek($offset) === true) {
                   $gid = $font->readUInt16();
                 }
-  
+
                 if ($gid != 0) {
                   $gid = ($gid + $d) & 0xFFFF;
                 }
               }
-  
+
               if ($gid >= 0) {
                 $glyphIndexArray[$c] = $gid;
               }
             }
           }
-  
+
           $subtable += array(
             "endCode"         => $endCode,
             "startCode"       => $startCode,
@@ -257,13 +257,36 @@ class cmap extends Table {
 
     ksort($newGlyphIndexArray); // Sort by char code
 
+    // Check if there are any SIP characters (> 0xFFFF)
+    $hasSIP = false;
+    $maxCode = 0;
+    foreach ($newGlyphIndexArray as $code => $gid) {
+      if ($code > 0xFFFF) {
+        $hasSIP = true;
+      }
+      if ($code > $maxCode) {
+        $maxCode = $code;
+      }
+    }
+
+    // Split BMP and SIP characters
+    $bmpGlyphIndexArray = array();
+    $sipGlyphIndexArray = array();
+    foreach ($newGlyphIndexArray as $code => $gid) {
+      if ($code <= 0xFFFF) {
+        $bmpGlyphIndexArray[$code] = $gid;
+      } else {
+        $sipGlyphIndexArray[$code] = $gid;
+      }
+    }
+
     $segments = array();
 
     $i        = -1;
     $prevCode = 0xFFFF;
     $prevGid  = 0xFFFF;
 
-    foreach ($newGlyphIndexArray as $code => $gid) {
+    foreach ($bmpGlyphIndexArray as $code => $gid) {
       if (
         $prevCode + 1 != $code ||
         $prevGid + 1 != $gid
@@ -325,9 +348,20 @@ class cmap extends Table {
         "endCode"            => $endCode,
         "idDelta"            => $idDelta,
         "idRangeOffset"      => $idRangeOffset,
-        "glyphIndexArray"    => $newGlyphIndexArray,
+        "glyphIndexArray"    => $bmpGlyphIndexArray,
       )
     );
+
+    // Add Format 12 subtable if SIP characters exist
+    if ($hasSIP) {
+      $subtables[] = array(
+        "platformID"         => 3,
+        "platformSpecificID" => 10,
+        "offset"             => null,
+        "format"             => 12,
+        "glyphIndexArray"    => $newGlyphIndexArray, // All chars including SIP
+      );
+    }
 
     $data = array(
       "version"         => 0,
@@ -347,26 +381,71 @@ class cmap extends Table {
       $length_before                   = $length;
       $data["subtables"][$i]["offset"] = $length;
 
-      $length += $font->writeUInt16($subtable["format"]);
+      if ($subtable["format"] == 12) {
+        // Write Format 12 subtable
+        $length += $font->writeUInt16(12); // format
+        $length += $font->writeUInt16(0);  // reserved
+        // Build groups for Format 12
+        $fmt12Groups = array();
+        $fmt12Glyphs = $subtable["glyphIndexArray"];
+        ksort($fmt12Glyphs);
+        $groupStart = null;
+        $groupEnd = null;
+        $groupGidStart = null;
+        $prevCode = -2;
+        $prevGid = -2;
+        foreach ($fmt12Glyphs as $code => $gid) {
+          if ($code === $prevCode + 1 && $gid === $prevGid + 1) {
+            $groupEnd = $code;
+            $prevCode = $code;
+            $prevGid = $gid;
+          } else {
+            if ($groupStart !== null) {
+              $fmt12Groups[] = array($groupStart, $groupEnd, $groupGidStart);
+            }
+            $groupStart = $code;
+            $groupEnd = $code;
+            $groupGidStart = $gid;
+            $prevCode = $code;
+            $prevGid = $gid;
+          }
+        }
+        if ($groupStart !== null) {
+          $fmt12Groups[] = array($groupStart, $groupEnd, $groupGidStart);
+        }
+        $ngroups = count($fmt12Groups);
+        $fmt12Length = 16 + $ngroups * 12; // 16 bytes header + 12 bytes per group
+        $length += $font->writeUInt32($fmt12Length); // length
+        $length += $font->writeUInt32(0); // language
+        $length += $font->writeUInt32($ngroups); // ngroups
+        foreach ($fmt12Groups as $group) {
+          $length += $font->writeUInt32($group[0]); // startCharCode
+          $length += $font->writeUInt32($group[1]); // endCharCode
+          $length += $font->writeUInt32($group[2]); // startGlyphID
+        }
+      } else {
+        // Write Format 4 subtable (original code)
+        $length += $font->writeUInt16($subtable["format"]);
 
-      $before_subheader = $font->pos();
-      $length += $font->pack(self::$subtable_v4_format, $subtable);
+        $before_subheader = $font->pos();
+        $length += $font->pack(self::$subtable_v4_format, $subtable);
 
-      $segCount = $subtable["segCount"];
-      $length += $font->w(array(self::uint16, $segCount), $subtable["endCode"]);
-      $length += $font->writeUInt16(0); // reservedPad
-      $length += $font->w(array(self::uint16, $segCount), $subtable["startCode"]);
-      $length += $font->w(array(self::int16, $segCount), $subtable["idDelta"]);
-      $length += $font->w(array(self::uint16, $segCount), $subtable["idRangeOffset"]);
-      $length += $font->w(array(self::uint16, $segCount), array_values($subtable["glyphIndexArray"]));
+        $segCount = $subtable["segCount"];
+        $length += $font->w(array(self::uint16, $segCount), $subtable["endCode"]);
+        $length += $font->writeUInt16(0); // reservedPad
+        $length += $font->w(array(self::uint16, $segCount), $subtable["startCode"]);
+        $length += $font->w(array(self::int16, $segCount), $subtable["idDelta"]);
+        $length += $font->w(array(self::uint16, $segCount), $subtable["idRangeOffset"]);
+        $length += $font->w(array(self::uint16, $segCount), array_values($subtable["glyphIndexArray"]));
 
-      $after_subtable = $font->pos();
+        $after_subtable = $font->pos();
 
-      $subtable["length"] = $length - $length_before;
-      $font->seek($before_subheader);
-      $font->pack(self::$subtable_v4_format, $subtable);
+        $subtable["length"] = $length - $length_before;
+        $font->seek($before_subheader);
+        $font->pack(self::$subtable_v4_format, $subtable);
 
-      $font->seek($after_subtable);
+        $font->seek($after_subtable);
+      }
     }
 
     // write subtables headers
